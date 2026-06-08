@@ -1,0 +1,431 @@
+################################################################################
+# run-selective-regression.yml
+# Location: tr/CobaltRegressionTesting/.github/workflows/run-selective-regression.yml
+#
+# Purpose:
+#   Manually triggered workflow to discover PRs from tr/cobalt_search by either:
+#     a) explicit PR number(s), or
+#     b) date range + state filter
+#   then analyze their file impact, map to test categories, and dispatch the
+#   appropriate WL_DNet_*.yml regression workflows.
+#
+#   Fully self-contained: uses bundled copies of feature-map.yml and tool scripts
+#   — no runtime dependency on tr/Seven-Kingdoms or tr/CobaltRegressionTesting.
+#
+# Inputs:
+#   pr_numbers  -- PR number(s), comma-separated (e.g. 2460,2461). Optional.
+#                  If given, date range inputs are ignored.
+#   date_from   -- PRs created on/after this date (YYYY-MM-DD). Optional.
+#   date_to     -- PRs created on/before this date (YYYY-MM-DD). Blank = now.
+#   state       -- State filter: merged | all | open | closed. Default: merged.
+#                  'merged' means closed PRs that were actually merged.
+#   env         -- Test environment: Demo | QED | QEDAWS. Default: Demo.
+#
+# Secrets required:
+#   COBALT_READ_TOKEN      -- GitHub PAT with read:repo on tr/cobalt_search
+#   REGRESSION_TRIGGER_PAT -- GitHub PAT with workflow:write on this repo
+################################################################################
+
+name: Run Selective Regression (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_numbers:
+        description: "PR number(s), comma-separated (e.g. 2460,2461). If given, date range is ignored."
+        required: false
+        type: string
+        default: ""
+      date_from:
+        description: "Date range start — PRs created on/after (YYYY-MM-DD). Ignored if PR number(s) given."
+        required: false
+        type: string
+        default: ""
+      date_to:
+        description: "Date range end — PRs created on/before (YYYY-MM-DD). Blank = up to now."
+        required: false
+        type: string
+        default: ""
+      state:
+        description: "State filter for date range. 'merged' = closed PRs that were actually merged."
+        required: false
+        type: choice
+        default: "merged"
+        options:
+          - merged
+          - all
+          - open
+          - closed
+      env:
+        description: "Test environment to run against."
+        required: false
+        type: choice
+        default: "Demo"
+        options:
+          - Demo
+          - QED
+          - QEDAWS
+
+permissions:
+  contents: read
+  actions:  write
+  issues:   write
+
+jobs:
+  run-selective-regression:
+    name: Discover PRs and dispatch selective regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ── Step 0: Checkout (provides bundled tools + feature-map) ─────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.REGRESSION_TRIGGER_PAT }}
+          fetch-depth: 1
+
+      # ── Step 1: Set up Python ────────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r tools/requirements.txt
+
+      # ── Step 2: Discover PRs (by number or date range) ──────────────────────
+      - name: Discover PRs
+        id: discover
+        env:
+          GITHUB_TOKEN: ${{ secrets.COBALT_READ_TOKEN }}
+          PR_NUMBERS:   ${{ inputs.pr_numbers }}
+          DATE_FROM:    ${{ inputs.date_from }}
+          DATE_TO:      ${{ inputs.date_to }}
+          STATE:        ${{ inputs.state }}
+        run: |
+          python3 - <<'EOF'
+          import os, json, sys
+          from datetime import datetime, timezone
+          from pathlib import Path
+          from github import Github, GithubException
+
+          REPO_FULL = "tr/cobalt_search"
+
+          token = os.environ.get("GITHUB_TOKEN")
+          if not token:
+              print("ERROR: COBALT_READ_TOKEN not set", file=sys.stderr)
+              sys.exit(1)
+
+          g    = Github(token)
+          repo = g.get_repo(REPO_FULL)
+
+          pr_numbers_raw = os.environ.get("PR_NUMBERS", "").strip()
+          date_from_raw  = os.environ.get("DATE_FROM", "").strip()
+          date_to_raw    = os.environ.get("DATE_TO", "").strip()
+          state_filter   = os.environ.get("STATE", "merged").strip().lower()
+
+          pr_list = []
+
+          if pr_numbers_raw:
+              # Mode 1 — explicit PR numbers; date range and state are ignored
+              print(f"Mode: explicit PR numbers ({pr_numbers_raw})", file=sys.stderr)
+              for num_str in pr_numbers_raw.split(","):
+                  num_str = num_str.strip()
+                  if not num_str.isdigit():
+                      continue
+                  try:
+                      pr = repo.get_pull(int(num_str))
+                      pr_list.append(pr)
+                      print(f"  Found PR #{pr.number}: {pr.title[:70]}", file=sys.stderr)
+                  except GithubException as e:
+                      print(f"  WARNING: Could not fetch PR #{num_str}: {e}", file=sys.stderr)
+          else:
+              # Mode 2 — date range + state filter
+              date_from = None
+              date_to   = None
+              if date_from_raw:
+                  date_from = datetime.strptime(date_from_raw, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+              if date_to_raw:
+                  date_to = datetime.strptime(date_to_raw, "%Y-%m-%d").replace(
+                      hour=23, minute=59, second=59, tzinfo=timezone.utc)
+
+              print(f"Mode: date range [{date_from_raw or '*'} → {date_to_raw or 'now'}] state={state_filter}",
+                    file=sys.stderr)
+
+              # Map 'merged' → query 'closed'; 'all' → query 'all'
+              api_state = "closed" if state_filter == "merged" else (
+                          state_filter if state_filter != "all" else "all")
+
+              for pr in repo.get_pulls(state=api_state, sort="created", direction="desc"):
+                  created = pr.created_at
+                  if date_from and created < date_from:
+                      break  # sorted desc by created — nothing older will match
+                  if date_to and created > date_to:
+                      continue
+                  if state_filter == "merged" and not pr.merged_at:
+                      continue
+                  pr_list.append(pr)
+                  print(f"  PR #{pr.number} ({pr.state}) [{created.date()}]: {pr.title[:60]}",
+                        file=sys.stderr)
+
+          print(f"Total PRs to analyze: {len(pr_list)}", file=sys.stderr)
+
+          Path("state").mkdir(parents=True, exist_ok=True)
+          Path("state/prs_discovered.json").write_text(json.dumps([
+              {
+                  "number":     pr.number,
+                  "title":      pr.title,
+                  "html_url":   pr.html_url,
+                  "head_sha":   pr.head.sha,
+                  "state":      pr.state,
+                  "merged_at":  pr.merged_at.isoformat() if pr.merged_at  else None,
+                  "created_at": pr.created_at.isoformat() if pr.created_at else None,
+              }
+              for pr in pr_list
+          ], indent=2))
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"pr_count={len(pr_list)}\n")
+          EOF
+
+      # ── Step 3: Analyze PR file impact ──────────────────────────────────────
+      - name: Analyze PR impact
+        if: steps.discover.outputs.pr_count != '0'
+        id: analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.COBALT_READ_TOKEN }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, subprocess, sys
+          from pathlib import Path
+
+          prs       = json.loads(Path("state/prs_discovered.json").read_text())
+          state_dir = Path("state/cobalt_search")
+          state_dir.mkdir(parents=True, exist_ok=True)
+
+          for pr_info in prs:
+              pr_num = pr_info["number"]
+              cmd = [
+                  sys.executable, "tools/pr_impact_analyzer.py",
+                  "--repo",      "tr/cobalt_search",
+                  "--state-dir", str(state_dir),
+                  "--force-prs", str(pr_num),
+              ]
+              result = subprocess.run(cmd, capture_output=True, text=True, env=os.environ.copy())
+              if result.returncode != 0:
+                  print(f"  WARNING: analysis failed for PR #{pr_num}: {result.stderr.strip()}",
+                        file=sys.stderr)
+                  continue
+              print(f"  Analyzed PR #{pr_num}", file=sys.stderr)
+              if result.stderr.strip():
+                  print(f"    {result.stderr.strip()}", file=sys.stderr)
+          EOF
+
+      # ── Step 4: Map impact to WL_DNet workflows (local feature-map) ─────────
+      - name: Map impact to test workflows
+        if: steps.discover.outputs.pr_count != '0'
+        id: map
+        run: |
+          python3 - <<'EOF'
+          import json, os, subprocess, sys
+          from pathlib import Path
+
+          prs       = json.loads(Path("state/prs_discovered.json").read_text())
+          plans_dir = Path("state/test_plans")
+          plans_dir.mkdir(parents=True, exist_ok=True)
+          all_wf     = set()
+          plan_count = 0
+
+          for pr_info in prs:
+              pr_num      = pr_info["number"]
+              impact_file = Path(f"state/cobalt_search/pr_impacts/pr_{pr_num}.json")
+              plan_file   = plans_dir / f"pr_{pr_num}.json"
+
+              if not impact_file.exists():
+                  print(f"  SKIP PR #{pr_num}: no impact file generated", file=sys.stderr)
+                  continue
+
+              cmd = [
+                  sys.executable, "tools/feature_test_mapper.py",
+                  "--impact",    str(impact_file),
+                  "--output",    str(plan_file),
+                  "--map-local", "config/feature-map.yml",
+              ]
+              result = subprocess.run(cmd, capture_output=True, text=True)
+              if result.returncode != 0:
+                  print(f"  FAIL PR #{pr_num}: {result.stderr.strip()}", file=sys.stderr)
+                  continue
+
+              plan = json.loads(plan_file.read_text())
+              if not plan.get("skip_all"):
+                  all_wf.update(plan.get("dotnet_workflows", []))
+              plan_count += 1
+              print(f"  PR #{pr_num}: {len(plan.get('dotnet_workflows',[]))} workflow(s) "
+                    f"[{plan.get('risk_level','?').upper()}]")
+
+          Path("state/all_impacted_workflows.json").write_text(json.dumps(sorted(all_wf), indent=2))
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"plan_count={plan_count}\n")
+              f.write(f"workflow_count={len(all_wf)}\n")
+
+          print(f"\nPlans built: {plan_count}  Unique workflows: {len(all_wf)}")
+          for wf in sorted(all_wf):
+              print(f"  -> {wf}.yml")
+          EOF
+
+      # ── Step 5: Dispatch selective-regression.yml for each PR ───────────────
+      - name: Dispatch selective regression
+        if: steps.discover.outputs.pr_count != '0'
+        env:
+          GH_TOKEN: ${{ secrets.REGRESSION_TRIGGER_PAT }}
+          REPO:     ${{ github.repository }}
+          TEST_ENV: ${{ inputs.env }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, subprocess, sys
+          from pathlib import Path
+
+          repo     = os.environ["REPO"]
+          test_env = os.environ.get("TEST_ENV", "Demo")
+          prs      = json.loads(Path("state/prs_discovered.json").read_text())
+          gh       = "gh"
+
+          ENV_ALIASES = {
+              "Demo":   ["Demo", "DEMO"],
+              "QED":    ["QED",  "Qed"],
+              "QEDAWS": ["QEDAWS"],
+          }
+
+          dispatched = 0
+          skipped    = 0
+          failed     = 0
+
+          for pr_info in prs:
+              pr_num    = pr_info["number"]
+              plan_file = Path(f"state/test_plans/pr_{pr_num}.json")
+
+              if not plan_file.exists():
+                  print(f"  SKIP PR #{pr_num}: no test plan generated", file=sys.stderr)
+                  skipped += 1
+                  continue
+
+              plan = json.loads(plan_file.read_text())
+
+              if plan.get("skip_all"):
+                  print(f"  SKIP PR #{pr_num}: skip_all=true ({plan.get('reason','')})")
+                  skipped += 1
+                  continue
+
+              workflows = plan.get("dotnet_workflows", [])
+              if not workflows:
+                  print(f"  SKIP PR #{pr_num}: no workflows mapped", file=sys.stderr)
+                  skipped += 1
+                  continue
+
+              candidates = list(dict.fromkeys([test_env] + ENV_ALIASES.get(test_env, [])))
+              cmd = [
+                  gh, "workflow", "run", "selective-regression.yml",
+                  "--repo", repo,
+                  "-f", f"pr_number={pr_num}",
+                  "-f", f"pr_title={pr_info.get('title','')[:80]}",
+                  "-f", f"pr_url={pr_info.get('html_url','')}",
+                  "-f", f"head_sha={pr_info.get('head_sha','')}",
+                  "-f", f"risk_level={plan.get('risk_level','low')}",
+                  "-f", f"modules={','.join(plan.get('modules',[]))}",
+                  "-f", f"products={','.join(plan.get('products',[]))}",
+                  "-f", f"dotnet_workflows={','.join(workflows)}",
+                  "-f", f"source_repo=tr/cobalt_search",
+                  "-f", f"TEST_ENVIRONMENT={candidates[0]}",
+              ]
+              result = subprocess.run(cmd, capture_output=True, text=True)
+              if result.returncode == 0:
+                  print(f"  OK  PR #{pr_num}: dispatched {len(workflows)} workflow(s) [{test_env}]")
+                  dispatched += 1
+              else:
+                  print(f"  FAIL PR #{pr_num}: {result.stderr.strip()}", file=sys.stderr)
+                  failed += 1
+
+          print(f"\nDispatched: {dispatched}  Skipped: {skipped}  Failed: {failed}")
+          if failed > 0:
+              sys.exit(1)
+          EOF
+
+      # ── Step 6: Write job summary ────────────────────────────────────────────
+      - name: Write job summary
+        if: always()
+        env:
+          PR_NUMBERS: ${{ inputs.pr_numbers }}
+          DATE_FROM:  ${{ inputs.date_from }}
+          DATE_TO:    ${{ inputs.date_to }}
+          STATE:      ${{ inputs.state }}
+          ENV_INPUT:  ${{ inputs.env }}
+          PR_COUNT:   ${{ steps.discover.outputs.pr_count    || '0' }}
+          WF_COUNT:   ${{ steps.map.outputs.workflow_count   || '0' }}
+          PLAN_COUNT: ${{ steps.map.outputs.plan_count       || '0' }}
+        run: |
+          python3 - <<'EOF'
+          import json, os
+          from pathlib import Path
+
+          pr_numbers = os.environ.get("PR_NUMBERS", "")
+          date_from  = os.environ.get("DATE_FROM", "")
+          date_to    = os.environ.get("DATE_TO", "")
+          state      = os.environ.get("STATE", "merged")
+          env_input  = os.environ.get("ENV_INPUT", "Demo")
+          pr_count   = int(os.environ.get("PR_COUNT", "0"))
+          wf_count   = int(os.environ.get("WF_COUNT", "0"))
+          plan_count = int(os.environ.get("PLAN_COUNT", "0"))
+
+          if pr_numbers:
+              mode = f"Explicit PR numbers: `{pr_numbers}`"
+          else:
+              mode = f"Date range: `{date_from or '*'}` → `{date_to or 'now'}` · state=`{state}`"
+
+          lines = [
+              "## Run Selective Regression — Manual Dispatch",
+              "",
+              "| Field | Value |",
+              "|---|---|",
+              f"| Mode | {mode} |",
+              f"| Environment | **{env_input}** |",
+              f"| PRs discovered | {pr_count} |",
+              f"| Test plans built | {plan_count} |",
+              f"| Unique workflows dispatched | {wf_count} |",
+              "",
+          ]
+
+          if pr_count == 0:
+              lines += ["### No PRs found matching the given criteria.", ""]
+          else:
+              prs_file = Path("state/prs_discovered.json")
+              if prs_file.exists():
+                  prs = json.loads(prs_file.read_text())
+                  lines += ["### PRs Processed", "",
+                             "| PR | State | Created | Title |",
+                             "|---|---|---|---|"]
+                  for pr in prs:
+                      num     = pr["number"]
+                      url     = pr.get("html_url", "")
+                      title   = pr.get("title", "")[:55]
+                      s       = pr.get("state", "?")
+                      created = (pr.get("created_at") or "")[:10]
+                      merged  = " ✓ merged" if pr.get("merged_at") else ""
+                      lines.append(f"| [#{num}]({url}) | {s}{merged} | {created} | {title} |")
+                  lines.append("")
+
+              wf_file = Path("state/all_impacted_workflows.json")
+              if wf_file.exists():
+                  all_wf = json.loads(wf_file.read_text())
+                  if all_wf:
+                      lines += ["### All Impacted Workflows", "", "| Workflow |", "|---|"]
+                      for wf in all_wf:
+                          lines.append(f"| `{wf}.yml` |")
+                      lines.append("")
+
+          with open(os.environ.get("GITHUB_STEP_SUMMARY", "summary.md"), "a") as f:
+              f.write("\n".join(lines) + "\n")
+          print("\n".join(lines))
+          EOF

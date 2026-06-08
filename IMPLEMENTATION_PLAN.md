@@ -16,7 +16,7 @@
 │  tr/CobaltRegressionTesting  (GitHub Actions host)                          │
 │                                                                              │
 │  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │  pr-watcher-scheduled.yml   (NEW — runs every 5 minutes)             │   │
+│  │  pr-watcher-scheduled.yml   (manual dispatch)                        │   │
 │  │                                                                      │   │
 │  │  1. Read config/repo-registry.yml                                    │   │
 │  │     → list of source repos (cobalt_search + future repos)            │   │

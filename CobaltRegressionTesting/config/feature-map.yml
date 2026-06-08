@@ -1,0 +1,587 @@
+################################################################################
+# feature-map.yml
+# Location: tr/Seven-Kingdoms repository root
+#
+# Purpose:
+#   Maps cobalt_search modules / sub-paths / keywords to TestCategory names.
+#   TestCategory names come from @SET CATEGORY_NAME=TestCategory=<name> in
+#   config/dotnet/**/*.bat files in tr/CobaltRegressionTesting.
+#
+#   pr-impact-analyzer.py  reads this file to decide which TestCategory values
+#   are impacted by a given PR. The runner then finds which WL_DNet_*.yml
+#   workflows have bat files containing those TestCategory values and triggers
+#   only those workflows.
+#
+# Mapping chain:
+#   cobalt_search changed files
+#     -> module / sub_path / keyword
+#       -> test_categories (this file)
+#         -> bat files with CATEGORY_NAME=TestCategory=<name>
+#           -> WL_DNet_*.yml workflows
+################################################################################
+
+version: "4.0"
+last_updated: "2026-04-08"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# MODULE MAPPINGS
+# Key = module folder name in cobalt_search (exact prefix match on file path)
+# ──────────────────────────────────────────────────────────────────────────────
+modules:
+
+  SearchCommon:
+    description: "Shared base -- DB integration, query processing, concurrency"
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - EdgeSmokeFeatures
+      - AdvancedSearchTemplate
+      - BrowsePageSearch
+      - Search4KUiIndigo
+      - Search4KUiWln
+      - MiscellaneousSearch
+      - SearchMiscellaneous
+      - SearchMetadata
+      - SearchblePdfs
+      - SmartSearch
+      - WlnEdgeSearch
+      - MultipleSearchWithin_Edge
+    risk_multiplier: high
+
+  SearchMetadataObjects:
+    description: "Domain data objects for search metadata"
+    test_categories:
+      - CoreSearch
+      - SearchMetadata
+      - SearchCore
+    risk_multiplier: medium
+
+  SearchSerialized:
+    description: "Serialization / deserialization + config resources"
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - AdvancedSearchTemplate
+      - Search4KUiIndigo
+      - Search4KUiWln
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  CarswellEcosystem:
+    description: "Legacy Ant/Ivy ecosystem config"
+    test_categories:
+      - CoreSearch
+    risk_multiplier: low
+
+  CobaltPlatformSearch:
+    description: "Core platform layer -- shared by all product modules"
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - AdvancedSearchTemplate
+      - Search4KUiIndigo
+      - Search4KUiWln
+      - MiscellaneousSearch
+      - SearchMiscellaneous
+      - BrowsePageSearch
+      - SearchMetadata
+      - SearchblePdfs
+      - SmartSearch
+      - WlnEdgeSearch
+      - MultipleSearchWithin_Edge
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  CarswellSearchWeb:
+    description: "Carswell legal research search (Canada)"
+    test_categories:
+      - CoreSearch
+      - Search
+    risk_multiplier: medium
+
+  TNPCarswellSearchWeb:
+    description: "Thomson Newspapers Platform search variant"
+    test_categories:
+      - CoreSearch
+    risk_multiplier: medium
+
+  WFASearchWeb:
+    description: "West / Federal / Administrative search"
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - AdvancedSearchTemplate
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  WLNSearch:
+    description: "Westlaw Next search (base)"
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - AdvancedSearchTemplate
+      - Search4KUiIndigo
+      - Search4KUiWln
+      - MiscellaneousSearch
+      - SearchMiscellaneous
+      - BrowsePageSearch
+      - SearchMetadata
+      - SearchblePdfs
+      - SmartSearch
+      - WlnEdgeSearch
+      - MultipleSearchWithin_Edge
+      - Wln_Enhancement_tests
+      - Wln_Enhancement_tests1
+      - Wln_Enhancement_tests2
+      - Wln_Enhancement_tests3
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  CorrectionalSearch:
+    description: "Correctional law search"
+    test_categories:
+      - CoreSearch
+      - WLNCorrectional
+    risk_multiplier: low
+
+  DraftingSearch:
+    description: "Legislative / drafting search"
+    test_categories:
+      - CoreSearch
+    risk_multiplier: low
+
+  WeblinksSearch:
+    description: "Weblinks integration search"
+    test_categories:
+      - GovernmentWeblinks
+      - Links
+      - CoreSearch
+    risk_multiplier: low
+
+# ──────────────────────────────────────────────────────────────────────────────
+# SUB-MODULE PATH MAPPINGS
+# Key = file path prefix in cobalt_search (longest match wins)
+# ──────────────────────────────────────────────────────────────────────────────
+sub_paths:
+
+  "WLNSearch/src/com/trgr/cobalt/search2/wln/aunz/":
+    product: AUNZ
+    test_categories:
+      - AnzEdgeRegression
+      - AnzDocuments
+      - AnzFacet
+      - AnzFavorites
+      - AnzFindAndPrint
+      - AnzNzFindAndPrint
+      - AnzUnderDevelopment
+      - AnzUnderDevelopment1
+      - AnzFoldering
+      - NzFormsNPrecedent
+      - NzLawlink
+      - KeyCiteTestFlag
+      - AnzNotes
+      - AnzRelatedInfo
+      - AnzResponsive
+      - AnzWebsite
+      - AnzAlerts
+      - AnzContacts
+      - AnzContinuousClient
+      - AnzCustomPages
+      - AuProdSmokeTest
+      - WLPASmoke
+      - NzProdSmokeTest
+      - WLPNZSmoke
+
+  "WLNSearch/src/com/trgr/cobalt/search2/wln/wlglobal/":
+    product: WLGlobal
+    test_categories:
+      - GlobalSearch
+      - CoreSearch
+      - Wln_Enhancement_tests
+      - Wln_Enhancement_tests1
+      - Wln_Enhancement_tests2
+      - Wln_Enhancement_tests3
+
+  "WLNSearch/src/com/trgr/cobalt/search2/wln/content/casesuk/":
+    product: WLUK
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+
+  "WLNSearch/src/com/trgr/cobalt/search2/wln/content/docketuk/":
+    product: WLUK
+    test_categories:
+      - CoreSearch
+
+  "WLNSearch/src/com/trgr/cobalt/search2/wln/content/researchuk/":
+    product: WLUK
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+
+  "WLNSearch/src/com/trgr/cobalt/wln/search/uk/":
+    product: WLUK
+    test_categories:
+      - CoreSearch
+
+  "WLNSearch/src/com/trgr/cobalt/search2/wln/publicrecords/":
+    product: PublicRecords
+    test_categories:
+      - CoreSearch
+
+  "WLNSearch/src/com/trgr/cobalt/search2/wln/result/service/WLUK/":
+    product: WLUK
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+
+# ──────────────────────────────────────────────────────────────────────────────
+# KEYWORD MAPPINGS
+# Matched against PR title + body text (case-insensitive)
+# ──────────────────────────────────────────────────────────────────────────────
+keywords:
+
+  brazil:
+    product: Brazil
+    test_categories:
+      - CoreSearch
+
+  "section symbol":
+    product: Brazil
+    test_categories:
+      - CoreSearch
+
+  wluk:
+    product: WLUK
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+
+  aunz:
+    product: AUNZ
+    test_categories:
+      - AnzEdgeRegression
+      - AnzDocuments
+      - AnzFacet
+      - AnzFindAndPrint
+      - AnzNzFindAndPrint
+      - AnzRelatedInfo
+      - AnzWebsite
+      - AuProdSmokeTest
+      - NzProdSmokeTest
+
+  anz:
+    product: AUNZ
+    test_categories:
+      - AnzEdgeRegression
+      - AnzDocuments
+      - AnzFacet
+      - AnzFindAndPrint
+      - AnzRelatedInfo
+      - AuProdSmokeTest
+      - NzProdSmokeTest
+
+  canada:
+    product: Canada
+    test_categories:
+      - Search
+      - Alerts
+      - AlertsAdmin
+      - ContentType
+      - CopyHyperlink
+      - CustomPages
+      - CanadaDocDisplay
+      - DocumentMisc
+      - Trillium
+      - TrilliumWebSite
+      - EdgeSmoke
+      - HomePage
+      - MasterTaxonomy
+      - WebsiteMisc
+
+  "phone plus":
+    product: PublicRecords
+    test_categories:
+      - CoreSearch
+      - Wln_Enhancement_tests
+
+  "cad alert":
+    product: Carswell
+    test_categories:
+      - CoreSearch
+
+  "cover page":
+    product: Carswell
+    test_categories:
+      - CoreSearch
+
+  enhancements:
+    product: WLNEnhancements
+    test_categories:
+      - Wln_Enhancement_tests
+      - Wln_Enhancement_tests1
+      - Wln_Enhancement_tests2
+      - Wln_Enhancement_tests3
+      - Wln_Enhancement_tests_indigo
+      - ExpertRelationships
+
+  blc:
+    product: BusinessLawCenter
+    test_categories:
+      - BLCCommon
+      - Agreements
+      - Alert
+      - FilerSearch
+      - NonBillable
+      - SecFilingsSectionSearchFandQdocuments
+      - SecFilingsSectionSearchKdocuments
+      - SectionSearch
+
+  "business law":
+    product: BusinessLawCenter
+    test_categories:
+      - BLCCommon
+      - Agreements
+      - FilerSearch
+      - BusinessLawTransition
+
+  docket:
+    product: Dockets
+    test_categories:
+      - DocketTests
+
+  keycite:
+    product: KeyCite
+    test_categories:
+      - RelatedInfoKeyciteCommand
+      - FolderAnalysisKeyCite
+
+  "key cite":
+    product: KeyCite
+    test_categories:
+      - RelatedInfoKeyciteCommand
+
+  "portal manager":
+    product: PortalManager
+    test_categories:
+      - PortalManager
+      - PortalManagerSearch
+
+  "court express":
+    product: CourtExpress
+    test_categories:
+      - CourtExpress
+
+  california:
+    product: CaliforniaOfficialReports
+    test_categories:
+      - EdgeCaliforniaOfficialReports_Regression
+      - WlnCaliforniaOfficialReports_Regression
+      - CCPAEdge
+      - CCPAWln
+
+  alerts:
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - CapitolWatch
+
+  document:
+    product: Document
+    test_categories:
+      - Document
+      - DocDisplay
+      - DOCX
+
+  delivery:
+    product: Delivery
+    test_categories:
+      - DOCX
+      - PrPSynopsisDelivery
+      - ResearchReportsDelivery
+      - RelatedInfoDelivery
+      - WebsiteDelivery
+
+  precision:
+    product: WestlawPrecision
+    test_categories:
+      - WestlawPrecision1
+      - WestlawPrecision2
+      - WestlawPrecision3
+      - WestlawPrecision4
+      - WestlawPrecision5
+      - WestlawPrecision6
+      - EdgeSmoke2.0
+      - GraphicalHistory
+      - CoCites
+      - ResearchOutlineBuilder
+      - ParallelSearch
+      - LitigationAnalytics
+
+  advantage:
+    product: WestlawAdvantage
+    test_categories:
+      - WestlawPrecision1
+      - WestlawPrecision2
+      - WestlawPrecision3
+      - WestlawPrecision4
+      - WestlawPrecision5
+      - WestlawPrecision6
+      - EdgeSmoke2.0
+      - CoCites
+      - GraphicalHistory
+
+  analytics:
+    product: Analytics
+    test_categories:
+      - WLAnalyticsIndigo
+      - AnalyticsAlertsEnhancements
+      - WLAnalytics
+      - LegalAnalyticsApi
+      - LitigationAnalytics
+      - TrdLegalAnalyticsUi
+      - TrdSmoke
+      - TrdApi
+      - TrdFacets
+
+  "related info":
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoKeyciteCommand
+      - RelatedInfoIpTools
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - RelatedInfoReferences
+
+  foldering:
+    product: Foldering
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - FolderRecommendations
+      - FolderRedesign1
+      - FolderRedesign2
+      - FolderAnalysisKeyCite
+
+  annotation:
+    product: Annotations
+    test_categories:
+      - EditAnnotationsColorEdge_Regression
+      - EditAnnotationsColorWln_Regression
+      - SharedAnnotations
+      - ParagraphHighlighting
+
+  "quick check":
+    product: QuickCheck
+    test_categories:
+      - QuickCheckUiCheckWork_1
+      - QuickCheckUiCheckWork_2
+      - QuickCheckUiCheckWork_3
+      - QuickCheckUiCheckWork_4
+      - QuickCheckUiJudicial_1
+      - QuickCheckUiJudicial_2
+      - QuickCheckUiJudicial_3
+      - QuickCheckUiOpponent
+
+  "tax migration":
+    product: TaxMigration
+    test_categories:
+      - WLNTax
+      - WLNTaxLiveChat
+      - WLNTaxLiveChat_OffHours
+      - LiveChat
+      - LiveChat_OffHours
+      - TermHighlight
+
+  notification:
+    product: NotificationCenter
+    test_categories:
+      - CoreSearch
+
+  website:
+    product: Website
+    test_categories:
+      - CoreWebsite
+      - WebsiteCore1
+      - WebsiteCore2
+      - WebsiteMobile
+
+  redlining:
+    product: Redlining
+    test_categories:
+      - Redlining
+      - RedliningRegressionTestSuite
+
+  "research report":
+    product: ResearchReports
+    test_categories:
+      - ResearchReports
+      - ResearchReportsDelivery
+      - ResearchRecommendations1
+      - ResearchRecommendations2
+
+  "smart folder":
+    product: SmartFolders
+    test_categories:
+      - NewSmartFolders
+      - SmartFolders
+
+  "10k":
+    product: 10KSearch
+    test_categories:
+      - 10KResultsEdge
+      - 10KResultsWln
+
+  "search 4k":
+    product: Search4K
+    test_categories:
+      - Search4KUiIndigo
+      - Search4KUiWln
+
+  trillium:
+    product: Trillium
+    test_categories:
+      - Trillium
+      - TrilliumWebSite
+
+  analytics:
+    product: Analytics
+    test_categories:
+      - WLAnalyticsIndigo
+      - AnalyticsAlertsEnhancements
+      - WLAnalytics
+
+# ──────────────────────────────────────────────────────────────────────────────
+# RISK ESCALATION
+# When risk_level = high, these TestCategory values are ALWAYS added.
+# ──────────────────────────────────────────────────────────────────────────────
+high_risk_always_add:
+  test_categories:
+    - CoreSearch
+    - GlobalSearch
+    - EdgeSmokeFeatures
+
+# ──────────────────────────────────────────────────────────────────────────────
+# CHANGE TYPE OVERRIDES
+# ──────────────────────────────────────────────────────────────────────────────
+change_type_rules:
+  test:
+    skip_integration: true
+  docs:
+    skip_all: true
+  chore:
+    test_categories_override:
+      - CoreSearch

@@ -44,7 +44,7 @@ repos:
     read_token_secret:  COBALT_READ_TOKEN
     feature_map_repo:   tr/Seven-Kingdoms
     feature_map_path:   feature-map.yml
-    feature_map_local:  ""
+    feature_map_local:  "config/feature-map.yml"
     test_environment:   DEMO
     lookback_days:      7
 
