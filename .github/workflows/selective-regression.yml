@@ -81,7 +81,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.REGRESSION_TRIGGER_PAT }}
+          token: ${{ github.token }}
           fetch-depth: 1
 
       # ── Step 1: Python setup ─────────────────────────────────────────────────
