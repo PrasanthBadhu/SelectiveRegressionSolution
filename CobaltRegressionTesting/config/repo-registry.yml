@@ -1,0 +1,74 @@
+################################################################################
+# repo-registry.yml
+# Location: tr/CobaltRegressionTesting/config/repo-registry.yml
+#
+# Purpose:
+#   Defines all source repositories that pr-watcher-scheduled.yml monitors
+#   for new and updated Pull Requests.
+#
+#   To add a new developer repository:
+#     1. Copy the template block at the bottom of this file.
+#     2. Set enabled: true.
+#     3. Set the correct full_name (GitHub owner/repo).
+#     4. Add the matching read-token secret to CobaltRegressionTesting's
+#        GitHub Secrets (Settings -> Secrets and variables -> Actions).
+#     5. If the new repo has a different module/product structure, create a
+#        new feature-map-<repo_name>.yml in tr/Seven-Kingdoms and set
+#        feature_map_path below.
+#     6. Merge this file to the default branch — the scheduler picks it up
+#        automatically on the next 5-minute cycle.
+#
+# Fields:
+#   name               short name used for state directory names and logging
+#   full_name          GitHub owner/repo (e.g. tr/cobalt_search)
+#   enabled            true | false — set false to pause monitoring without removing
+#   description        human-readable description (not used by automation)
+#   read_token_secret  name of the GitHub Secret holding a PAT with read:repo
+#                      on this repository (defaults to COBALT_READ_TOKEN)
+#   feature_map_repo   GitHub repo that holds the feature-map YAML
+#   feature_map_path   path within feature_map_repo to the feature-map file
+#   feature_map_local  optional: local path (relative to repo root) to a cached
+#                      copy of the feature-map; used instead of GitHub API when
+#                      present (avoids extra API calls and rate limits)
+#   test_environment   default TEST_SITE_DotNet value for this repo (DEMO, QED, …)
+#   lookback_days      how many days back to scan for open PRs on startup
+################################################################################
+
+repos:
+
+  # ── Primary monitored repository ────────────────────────────────────────────
+  - name:               cobalt_search
+    full_name:          tr/cobalt_search
+    enabled:            true
+    description:        "Core Cobalt Search platform (Java/Spring)"
+    read_token_secret:  COBALT_READ_TOKEN
+    feature_map_repo:   tr/Seven-Kingdoms
+    feature_map_path:   feature-map.yml
+    feature_map_local:  ""
+    test_environment:   DEMO
+    lookback_days:      7
+
+  # ── Template for future repositories ────────────────────────────────────────
+  # Uncomment and fill in to onboard a new source repository.
+  #
+  # - name:               cobalt_documents
+  #   full_name:          tr/cobalt_documents
+  #   enabled:            false
+  #   description:        "Cobalt Documents delivery platform"
+  #   read_token_secret:  COBALT_READ_TOKEN
+  #   feature_map_repo:   tr/Seven-Kingdoms
+  #   feature_map_path:   feature-map-documents.yml
+  #   feature_map_local:  ""
+  #   test_environment:   DEMO
+  #   lookback_days:      7
+  #
+  # - name:               cobalt_alerts
+  #   full_name:          tr/cobalt_alerts
+  #   enabled:            false
+  #   description:        "Cobalt Alerts service"
+  #   read_token_secret:  COBALT_ALERTS_READ_TOKEN
+  #   feature_map_repo:   tr/Seven-Kingdoms
+  #   feature_map_path:   feature-map-alerts.yml
+  #   feature_map_local:  ""
+  #   test_environment:   DEMO
+  #   lookback_days:      7

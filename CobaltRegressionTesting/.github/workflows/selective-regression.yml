@@ -1,0 +1,211 @@
+################################################################################
+# selective-regression.yml  (updated: added source_repo input for traceability)
+# Location: tr/CobaltRegressionTesting/.github/workflows/selective-regression.yml
+#
+# Purpose:
+#   Receives a list of WL_DNet_*.yml workflow names and dispatches each one
+#   via workflow_dispatch.  Called by:
+#     - pr-watcher-scheduled.yml  (for open/new PRs, automated)
+#     - pr-poller.yml             (for merged PRs, manual)
+#
+# Changes vs. original:
+#   - Added  source_repo  input (optional) for job summary traceability.
+#     All dispatch and execution logic is otherwise UNCHANGED.
+#
+# Inputs (passed by callers via workflow_dispatch, or set manually):
+#   pr_number        -- source PR number
+#   pr_title         -- PR title (display only)
+#   pr_url           -- link back to the PR
+#   head_sha         -- commit SHA being tested
+#   risk_level       -- low | medium | high
+#   modules          -- comma-separated module names
+#   products         -- comma-separated product names
+#   dotnet_workflows -- comma-separated WL_DNet workflow names (without .yml)
+#   source_repo      -- [NEW] originating GitHub repo (e.g. tr/cobalt_search)
+#   TEST_ENVIRONMENT -- environment to run tests against (default: DEMO)
+################################################################################
+
+name: Selective Regression
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Source PR number"
+        required: true
+        type: string
+      pr_title:
+        description: "PR title"
+        required: false
+        type: string
+        default: ""
+      pr_url:
+        description: "PR URL"
+        required: false
+        type: string
+        default: ""
+      head_sha:
+        description: "Head commit SHA"
+        required: false
+        type: string
+        default: ""
+      risk_level:
+        description: "Risk level: low | medium | high"
+        required: false
+        type: string
+        default: "low"
+      modules:
+        description: "Comma-separated impacted modules"
+        required: false
+        type: string
+        default: ""
+      products:
+        description: "Comma-separated impacted products"
+        required: false
+        type: string
+        default: ""
+      dotnet_workflows:
+        description: "Comma-separated WL_DNet workflow names (without .yml)"
+        required: true
+        type: string
+      source_repo:
+        description: "Source GitHub repo that triggered this run (e.g. tr/cobalt_search)"
+        required: false
+        type: string
+        default: "tr/cobalt_search"
+      TEST_ENVIRONMENT:
+        description: "Setting to default TEST_ENVIRONMENT based on selection"
+        required: true
+        type: choice
+        default: "DEMO"
+        options:
+          - DEMO
+          - DEMOAWS
+          - QED
+          - QEDAWS
+          - QEDAWS2
+
+permissions:
+  contents: read
+  actions:  write
+  issues:   write
+
+jobs:
+  dispatch-workflows:
+    name: Dispatch WL_DNet workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Dispatch each workflow
+        env:
+          GH_TOKEN:         ${{ secrets.REGRESSION_TRIGGER_PAT }}
+          REPO:             ${{ github.repository }}
+          DOTNET_WORKFLOWS: ${{ inputs.dotnet_workflows }}
+          TEST_ENVIRONMENT: ${{ inputs.TEST_ENVIRONMENT }}
+          PR_NUMBER:        ${{ inputs.pr_number }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, subprocess, sys
+
+          repo      = os.environ["REPO"]
+          workflows = [w.strip() for w in os.environ.get("DOTNET_WORKFLOWS","").split(",") if w.strip()]
+          env       = os.environ.get("TEST_ENVIRONMENT", "DEMO")
+          pr_num    = os.environ.get("PR_NUMBER", "?")
+          gh        = "gh"
+
+          # Some workflows accept 'Demo' (mixed case), others accept 'DEMO' (all caps).
+          ENV_ALIASES = {
+              "DEMO":    ["DEMO", "Demo"],
+              "DEMOAWS": ["DEMOAWS"],
+              "QED":     ["QED", "Qed"],
+              "QEDAWS":  ["QEDAWS"],
+              "QEDAWS2": ["QEDAWS2"],
+          }
+
+          print(f"Dispatching {len(workflows)} workflow(s) for PR #{pr_num} [{env}]")
+
+          dispatched = 0
+          failed     = 0
+
+          for wf in workflows:
+              wf_file    = f"{wf}.yml"
+              candidates = list(dict.fromkeys([env] + ENV_ALIASES.get(env, [])))
+              success    = False
+
+              for candidate in candidates:
+                  cmd = [
+                      gh, "workflow", "run", wf_file,
+                      "--repo", repo,
+                      "-f", f"TEST_SITE_DotNet={candidate}",
+                  ]
+                  result = subprocess.run(cmd, capture_output=True, text=True)
+                  if result.returncode == 0:
+                      print(f"  OK  {wf_file}  (env={candidate})")
+                      dispatched += 1
+                      success = True
+                      break
+
+              if not success:
+                  print(f"  FAIL {wf_file}: {result.stderr.strip()}", file=sys.stderr)
+                  failed += 1
+
+          print(f"\nDispatched: {dispatched}  Failed: {failed}")
+          if failed > 0:
+              sys.exit(1)
+          EOF
+
+      - name: Write job summary
+        if: always()
+        env:
+          PR_NUMBER:        ${{ inputs.pr_number }}
+          PR_TITLE:         ${{ inputs.pr_title }}
+          PR_URL:           ${{ inputs.pr_url }}
+          HEAD_SHA:         ${{ inputs.head_sha }}
+          RISK:             ${{ inputs.risk_level }}
+          MODULES:          ${{ inputs.modules }}
+          PRODUCTS:         ${{ inputs.products }}
+          DOTNET_WORKFLOWS: ${{ inputs.dotnet_workflows }}
+          SOURCE_REPO:      ${{ inputs.source_repo }}
+          TEST_ENVIRONMENT: ${{ inputs.TEST_ENVIRONMENT }}
+        run: |
+          python3 - <<'EOF'
+          import os
+
+          workflows   = [w.strip() for w in os.environ.get("DOTNET_WORKFLOWS","").split(",") if w.strip()]
+          env         = os.environ.get("TEST_ENVIRONMENT","DEMO")
+          pr_num      = os.environ.get("PR_NUMBER","?")
+          pr_title    = os.environ.get("PR_TITLE","")
+          pr_url      = os.environ.get("PR_URL","")
+          source_repo = os.environ.get("SOURCE_REPO","tr/cobalt_search")
+
+          lines = [
+            f"## Selective Regression — PR #{pr_num}",
+            "",
+            "| Field | Value |",
+            "|---|---|",
+            f"| PR | [{pr_title[:60]}]({pr_url}) |",
+            f"| Source repo | `{source_repo}` |",
+            f"| SHA | `{os.environ.get('HEAD_SHA','')[:12]}` |",
+            f"| Risk | **{os.environ.get('RISK','').upper()}** |",
+            f"| Modules | {os.environ.get('MODULES','')} |",
+            f"| Products | {os.environ.get('PRODUCTS','')} |",
+            f"| TEST_ENVIRONMENT | {env} |",
+            f"| Workflows dispatched | {len(workflows)} |",
+            "",
+            "| Workflow |",
+            "|---|",
+          ]
+          for wf in workflows:
+              lines.append(f"| `{wf}.yml` |")
+
+          lines += [
+            "",
+            f"> Triggered by PR watcher from `{source_repo}` PR #{pr_num}",
+            f"> Full run: https://github.com/{os.environ.get('GITHUB_REPOSITORY','?')}/actions/runs/{os.environ.get('GITHUB_RUN_ID','?')}",
+          ]
+
+          with open(os.environ.get("GITHUB_STEP_SUMMARY","summary.md"), "a", encoding="utf-8") as f:
+              f.write("\n".join(lines) + "\n")
+          print("\n".join(lines))
+          EOF

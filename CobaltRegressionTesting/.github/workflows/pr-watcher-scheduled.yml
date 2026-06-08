@@ -1,0 +1,557 @@
+################################################################################
+# pr-watcher-scheduled.yml
+# Location: tr/CobaltRegressionTesting/.github/workflows/pr-watcher-scheduled.yml
+#
+# Purpose:
+#   Runs on a schedule (every 5 minutes) to detect NEW or UPDATED open PRs in
+#   any repository listed in config/repo-registry.yml, then selectively
+#   triggers regression tests for only the impacted test categories.
+#
+#   This complements pr-poller.yml (which handles MERGED PRs on manual dispatch).
+#   This workflow handles OPEN PRs automatically, enabling pre-merge quality gates.
+#
+# Flow:
+#   1. Read config/repo-registry.yml to get all enabled source repositories
+#   2. Restore per-repo PR-state from state-tracking branch (change detection)
+#   3. For each enabled repo: run pr_impact_analyzer.py --repo <full_name>
+#      -> detects PRs that are new or whose head SHA has changed since last run
+#   4. For each new/changed PR: run feature_test_mapper.py
+#      -> maps changed files -> TestCategory names -> WL_DNet_*.yml workflow names
+#   5. Dispatch selective-regression.yml once per PR with its workflow list
+#   6. Commit updated per-repo state back to state-tracking branch
+#
+# State layout on state-tracking branch:
+#   state/repos/<repo_name>/last_seen_prs.json   -- change-detection state
+#   state/repos/<repo_name>/pr_impacts/          -- impact JSON per PR
+#   state/repos/<repo_name>/test_plans/          -- test plan JSON per PR
+#
+# Secrets required:
+#   COBALT_READ_TOKEN      -- GitHub PAT, read:repo on tr/cobalt_search
+#   SEVEN_KINGDOMS_TOKEN   -- GitHub PAT, read:repo on tr/Seven-Kingdoms
+#   REGRESSION_TRIGGER_PAT -- GitHub PAT, workflow:write on THIS repo
+#
+# Adding a new source repository:
+#   1. Add an entry to config/repo-registry.yml (enabled: true)
+#   2. Add a read-token secret for that repo if different from COBALT_READ_TOKEN
+#   3. If the repo has a different module structure, add a new feature-map.yml
+#      in Seven-Kingdoms and set feature_map_path in the registry entry
+################################################################################
+
+name: PR Watcher - Scheduled
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: analyse but do NOT trigger regression workflows"
+        type: boolean
+        default: false
+      repo_filter:
+        description: "Limit to this repo name only (e.g. cobalt_search). Blank = all."
+        type: string
+        default: ""
+      force_prs:
+        description: "Force re-analysis of these PR numbers (comma-separated, e.g. 2460,2461)"
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+  actions:  write
+  issues:   write
+
+jobs:
+  watch-and-dispatch:
+    name: Watch PRs and dispatch selective regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      # ── Step 0: Checkout main branch of CobaltRegressionTesting ─────────────
+      - name: Checkout CobaltRegressionTesting
+        uses: actions/checkout@v4
+        with:
+          token:      ${{ secrets.REGRESSION_TRIGGER_PAT }}
+          fetch-depth: 1
+
+      # ── Step 0b: Restore per-repo state from state-tracking branch ───────────
+      - name: Restore PR state from state-tracking branch
+        env:
+          GH_TOKEN: ${{ secrets.REGRESSION_TRIGGER_PAT }}
+          REPO:     ${{ github.repository }}
+        run: |
+          python3 - <<'EOF'
+          import os, json, subprocess, base64
+          from pathlib import Path
+
+          repo = os.environ["REPO"]
+          gh   = "gh"
+
+          Path("state/repos").mkdir(parents=True, exist_ok=True)
+
+          # List top-level entries under state/repos on state-tracking branch
+          result = subprocess.run(
+              [gh, "api", f"/repos/{repo}/contents/state/repos",
+               "-H", "Accept: application/vnd.github+json",
+               "-f", "ref=state-tracking"],
+              capture_output=True, text=True)
+
+          if result.returncode != 0:
+              print("No prior state found on state-tracking branch (first run).")
+              exit(0)
+
+          repo_dirs = json.loads(result.stdout)
+          if not isinstance(repo_dirs, list):
+              exit(0)
+
+          for repo_dir in repo_dirs:
+              if repo_dir["type"] != "dir":
+                  continue
+              repo_name = repo_dir["name"]
+              local_dir = Path(f"state/repos/{repo_name}")
+              local_dir.mkdir(parents=True, exist_ok=True)
+
+              # Fetch last_seen_prs.json
+              state_path = f"state/repos/{repo_name}/last_seen_prs.json"
+              content_r = subprocess.run(
+                  [gh, "api", f"/repos/{repo}/contents/{state_path}",
+                   "-H", "Accept: application/vnd.github.raw",
+                   "-f", "ref=state-tracking"],
+                  capture_output=True, text=True)
+              if content_r.returncode == 0:
+                  (local_dir / "last_seen_prs.json").write_text(content_r.stdout)
+                  print(f"  Restored state: {state_path}")
+          EOF
+
+      # ── Step 1: Set up Python ────────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r tools/requirements.txt
+
+      # ── Step 2: Detect new / updated open PRs across all registered repos ───
+      - name: Detect new and updated open PRs
+        id: detect
+        env:
+          COBALT_READ_TOKEN: ${{ secrets.COBALT_READ_TOKEN }}
+          REPO_FILTER:       ${{ github.event.inputs.repo_filter || '' }}
+          FORCE_PRS:         ${{ github.event.inputs.force_prs   || '' }}
+        run: |
+          python3 - <<'EOF'
+          import os, json, sys, subprocess
+          import yaml
+          from pathlib import Path
+
+          repo_filter = os.environ.get("REPO_FILTER", "").strip()
+          force_prs   = [p.strip() for p in os.environ.get("FORCE_PRS","").split(",") if p.strip()]
+
+          registry = yaml.safe_load(Path("config/repo-registry.yml").read_text())
+          repos    = [r for r in registry.get("repos", []) if r.get("enabled", True)]
+
+          if repo_filter:
+              repos = [r for r in repos if r["name"] == repo_filter]
+              if not repos:
+                  print(f"WARNING: no enabled repo matches filter '{repo_filter}'", file=sys.stderr)
+
+          print(f"Monitoring {len(repos)} repo(s): {[r['name'] for r in repos]}", file=sys.stderr)
+
+          all_prs = []
+
+          for repo_cfg in repos:
+              repo_name    = repo_cfg["name"]
+              full_name    = repo_cfg["full_name"]
+              token_secret = repo_cfg.get("read_token_secret", "COBALT_READ_TOKEN")
+              gh_token     = os.environ.get(token_secret) or os.environ.get("COBALT_READ_TOKEN","")
+
+              state_dir = Path(f"state/repos/{repo_name}")
+              state_dir.mkdir(parents=True, exist_ok=True)
+
+              # Build command for pr_impact_analyzer.py
+              env_copy = {**os.environ, "GITHUB_TOKEN": gh_token}
+              cmd = [
+                  sys.executable, "tools/pr_impact_analyzer.py",
+                  "--repo",      full_name,
+                  "--state-dir", str(state_dir),
+              ]
+              if force_prs:
+                  cmd += ["--force-prs", ",".join(force_prs)]
+
+              result = subprocess.run(cmd, capture_output=True, text=True, env=env_copy)
+
+              if result.returncode != 0:
+                  print(f"ERROR: pr_impact_analyzer failed for {repo_name}:", file=sys.stderr)
+                  print(result.stderr, file=sys.stderr)
+                  continue
+
+              stderr_lines = result.stderr.strip()
+              if stderr_lines:
+                  print(f"  [{repo_name}] {stderr_lines}", file=sys.stderr)
+
+              if result.stdout.strip():
+                  try:
+                      prs = json.loads(result.stdout.strip())
+                  except json.JSONDecodeError:
+                      prs = []
+              else:
+                  prs = []
+
+              for pr in prs:
+                  # Attach registry metadata so later steps know which repo/env to use
+                  pr["_source_repo"] = full_name
+                  pr["_repo_name"]   = repo_name
+                  pr["_repo_cfg"]    = {k: v for k, v in repo_cfg.items()
+                                        if not k.startswith("read_token")}
+
+              all_prs.extend(prs)
+              print(f"  {repo_name}: {len(prs)} new/updated PR(s)", file=sys.stderr)
+
+          Path("state/prs_to_process.json").write_text(json.dumps(all_prs, indent=2))
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"pr_count={len(all_prs)}\n")
+
+          print(f"Total new/updated PRs detected: {len(all_prs)}", file=sys.stderr)
+          EOF
+
+      # ── Step 3: Map each PR to TestCategory names and WL_DNet workflows ─────
+      - name: Map PR impact to test workflows
+        if: steps.detect.outputs.pr_count != '0'
+        id: map
+        env:
+          GITHUB_TOKEN: ${{ secrets.SEVEN_KINGDOMS_TOKEN }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, subprocess, sys
+          from pathlib import Path
+
+          prs      = json.loads(Path("state/prs_to_process.json").read_text())
+          all_wf   = set()
+          plan_count = 0
+
+          for pr in prs:
+              pr_num    = pr["pr_number"]
+              repo_name = pr.get("_repo_name", "cobalt_search")
+              repo_cfg  = pr.get("_repo_cfg", {})
+
+              impact_dir = Path(f"state/repos/{repo_name}/pr_impacts")
+              plan_dir   = Path(f"state/repos/{repo_name}/test_plans")
+              impact_dir.mkdir(parents=True, exist_ok=True)
+              plan_dir.mkdir(parents=True, exist_ok=True)
+
+              impact_file = impact_dir / f"pr_{pr_num}.json"
+              plan_file   = plan_dir   / f"pr_{pr_num}.json"
+
+              # Strip internal metadata before writing impact file
+              impact_data = {k: v for k, v in pr.items() if not k.startswith("_")}
+              impact_file.write_text(json.dumps(impact_data, indent=2))
+
+              # Optionally use a local copy of feature-map.yml (avoids GitHub API call)
+              local_map = repo_cfg.get("feature_map_local", "")
+              cmd = [
+                  sys.executable, "tools/feature_test_mapper.py",
+                  "--impact", str(impact_file),
+                  "--output", str(plan_file),
+              ]
+              if local_map and Path(local_map).exists():
+                  cmd += ["--map-local", local_map]
+
+              result = subprocess.run(cmd, capture_output=False)
+              if result.returncode != 0:
+                  print(f"WARNING: mapping failed for {repo_name}/PR #{pr_num}", file=sys.stderr)
+                  continue
+
+              plan = json.loads(plan_file.read_text())
+              if not plan.get("skip_all"):
+                  all_wf.update(plan.get("dotnet_workflows", []))
+              plan_count += 1
+
+          Path("state/all_impacted_workflows.json").write_text(
+              json.dumps(sorted(all_wf), indent=2))
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"plan_count={plan_count}\n")
+              f.write(f"workflow_count={len(all_wf)}\n")
+
+          print(f"Plans built: {plan_count}  Unique workflows: {len(all_wf)}")
+          for wf in sorted(all_wf):
+              print(f"  -> {wf}.yml")
+          EOF
+
+      # ── Step 4: Dispatch selective-regression.yml once per PR ───────────────
+      - name: Dispatch selective regression per PR
+        if: |
+          steps.detect.outputs.pr_count != '0' &&
+          github.event.inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.REGRESSION_TRIGGER_PAT }}
+          REPO:     ${{ github.repository }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, subprocess, sys
+          from pathlib import Path
+
+          repo = os.environ["REPO"]
+          gh   = "gh"
+          prs  = json.loads(Path("state/prs_to_process.json").read_text())
+
+          dispatched = 0
+          skipped    = 0
+          failed     = 0
+
+          for pr in prs:
+              pr_num    = pr["pr_number"]
+              repo_name = pr.get("_repo_name", "cobalt_search")
+              repo_cfg  = pr.get("_repo_cfg", {})
+              test_env  = repo_cfg.get("test_environment", "DEMO")
+              source_repo = pr.get("_source_repo", "tr/cobalt_search")
+
+              plan_file = Path(f"state/repos/{repo_name}/test_plans/pr_{pr_num}.json")
+              if not plan_file.exists():
+                  print(f"  SKIP  PR #{pr_num} ({repo_name}): no test plan generated", file=sys.stderr)
+                  skipped += 1
+                  continue
+
+              plan = json.loads(plan_file.read_text())
+              if plan.get("skip_all"):
+                  print(f"  SKIP  PR #{pr_num} ({repo_name}): skip_all=true ({plan.get('reason','')})")
+                  skipped += 1
+                  continue
+
+              workflows = plan.get("dotnet_workflows", [])
+              if not workflows:
+                  print(f"  SKIP  PR #{pr_num} ({repo_name}): no workflows mapped", file=sys.stderr)
+                  skipped += 1
+                  continue
+
+              # Dispatch selective-regression.yml
+              cmd = [
+                  gh, "workflow", "run", "selective-regression.yml",
+                  "--repo", repo,
+                  "-f", f"pr_number={pr_num}",
+                  "-f", f"pr_title={pr.get('pr_title','')[:80]}",
+                  "-f", f"pr_url={pr.get('pr_url','')}",
+                  "-f", f"head_sha={pr.get('head_sha','')}",
+                  "-f", f"risk_level={pr.get('risk_level','low')}",
+                  "-f", f"modules={','.join(pr.get('modules_affected',[]))}",
+                  "-f", f"products={','.join(pr.get('all_products',[]))}",
+                  "-f", f"dotnet_workflows={','.join(workflows)}",
+                  "-f", f"source_repo={source_repo}",
+                  "-f", f"TEST_ENVIRONMENT={test_env}",
+              ]
+              result = subprocess.run(cmd, capture_output=True, text=True)
+              if result.returncode == 0:
+                  print(f"  OK  PR #{pr_num} ({repo_name}): dispatched {len(workflows)} workflow(s)")
+                  dispatched += 1
+              else:
+                  print(f"  FAIL PR #{pr_num} ({repo_name}): {result.stderr.strip()}", file=sys.stderr)
+                  failed += 1
+
+          print(f"\nDispatched: {dispatched}  Skipped: {skipped}  Failed: {failed}")
+          if failed > 0:
+              sys.exit(1)
+          EOF
+
+      # ── Step 5: Commit updated state to state-tracking branch ───────────────
+      - name: Commit updated state to state-tracking branch
+        if: steps.detect.outputs.pr_count != '0'
+        env:
+          GH_TOKEN: ${{ secrets.REGRESSION_TRIGGER_PAT }}
+          REPO:     ${{ github.repository }}
+        run: |
+          python3 - <<'EOF'
+          import base64, json, os, subprocess, sys
+          from pathlib import Path
+
+          repo         = os.environ["REPO"]
+          gh           = "gh"
+          state_branch = "state-tracking"
+
+          # Collect all state files written this run
+          state_files = []
+          for root in ["state/repos", "state/prs_to_process.json",
+                       "state/all_impacted_workflows.json"]:
+              p = Path(root)
+              if p.is_dir():
+                  state_files.extend(p.rglob("*.json"))
+              elif p.exists():
+                  state_files.append(p)
+
+          if not state_files:
+              print("No state files to commit. Skipping.")
+              sys.exit(0)
+
+          # Ensure state-tracking branch exists; create from main if not
+          check = subprocess.run(
+              [gh, "api", f"/repos/{repo}/git/ref/heads/{state_branch}"],
+              capture_output=True, text=True)
+          if check.returncode != 0:
+              print(f"Branch '{state_branch}' not found — creating from main ...", file=sys.stderr)
+              main_ref = subprocess.run(
+                  [gh, "api", f"/repos/{repo}/git/ref/heads/main"],
+                  capture_output=True, text=True)
+              if main_ref.returncode != 0:
+                  print(f"ERROR: could not get main SHA: {main_ref.stderr}", file=sys.stderr)
+                  sys.exit(1)
+              main_sha = json.loads(main_ref.stdout)["object"]["sha"]
+              subprocess.run(
+                  [gh, "api", "--method", "POST", f"/repos/{repo}/git/refs",
+                   "-f", f"ref=refs/heads/{state_branch}",
+                   "-f", f"sha={main_sha}"],
+                  capture_output=True, text=True)
+              print(f"Created branch '{state_branch}'", file=sys.stderr)
+
+          # Get HEAD OID of state-tracking branch for GraphQL mutation
+          oid_result = subprocess.run(
+              [gh, "api", "graphql",
+               "-f", 'query=query { repository(owner: "tr", name: "CobaltRegressionTesting") { ref(qualifiedName: "state-tracking") { target { oid } } } }'],
+              capture_output=True, text=True)
+          if oid_result.returncode != 0:
+              print(f"ERROR: could not get HEAD OID: {oid_result.stderr}", file=sys.stderr)
+              sys.exit(1)
+
+          head_oid = json.loads(oid_result.stdout)["data"]["repository"]["ref"]["target"]["oid"]
+          print(f"Branch: {state_branch}  HEAD OID: {head_oid}")
+
+          # Build additions list
+          additions = []
+          for fpath in state_files:
+              try:
+                  content_b64 = base64.b64encode(fpath.read_bytes()).decode()
+                  additions.append({"path": fpath.as_posix(), "contents": content_b64})
+              except Exception as e:
+                  print(f"  WARNING: could not read {fpath}: {e}", file=sys.stderr)
+
+          print(f"Committing {len(additions)} state file(s) to '{state_branch}'...")
+
+          mutation = """
+          mutation($input: CreateCommitOnBranchInput!) {
+            createCommitOnBranch(input: $input) {
+              commit { url oid }
+            }
+          }
+          """
+          variables = {
+              "input": {
+                  "branch": {
+                      "repositoryNameWithOwner": repo,
+                      "branchName": state_branch,
+                  },
+                  "message": {"headline": "chore: update PR watcher state [skip ci]"},
+                  "expectedHeadOid": head_oid,
+                  "fileChanges": {"additions": additions},
+              }
+          }
+          payload = json.dumps({"query": mutation, "variables": variables})
+          result = subprocess.run(
+              [gh, "api", "graphql", "--input", "-"],
+              input=payload, capture_output=True, text=True)
+
+          if result.returncode != 0:
+              print(f"ERROR: GraphQL commit failed: {result.stderr}", file=sys.stderr)
+              sys.exit(1)
+          resp = json.loads(result.stdout)
+          if "errors" in resp:
+              print(f"ERROR: GraphQL errors: {resp['errors']}", file=sys.stderr)
+              sys.exit(1)
+
+          commit_url = resp["data"]["createCommitOnBranch"]["commit"]["url"]
+          print(f"State committed: {len(additions)} file(s) -> {commit_url}")
+          EOF
+
+      # ── Step 6: Write job summary ────────────────────────────────────────────
+      - name: Write job summary
+        if: always()
+        env:
+          DRY_RUN:        ${{ github.event.inputs.dry_run  || 'false' }}
+          REPO_FILTER:    ${{ github.event.inputs.repo_filter || '' }}
+          PR_COUNT:       ${{ steps.detect.outputs.pr_count    || '0' }}
+          WF_COUNT:       ${{ steps.map.outputs.workflow_count || '0' }}
+          PLAN_COUNT:     ${{ steps.map.outputs.plan_count     || '0' }}
+        run: |
+          python3 - <<'EOF'
+          import json, os
+          from pathlib import Path
+
+          dry         = os.environ.get("DRY_RUN","false").lower() == "true"
+          repo_filter = os.environ.get("REPO_FILTER","")
+          pr_count    = int(os.environ.get("PR_COUNT","0"))
+          wf_count    = int(os.environ.get("WF_COUNT","0"))
+          plan_count  = int(os.environ.get("PLAN_COUNT","0"))
+
+          lines = [
+            "## PR Watcher — Selective Regression Dispatch",
+            "",
+            "| Field | Value |",
+            "|---|---|",
+            f"| Trigger | {'scheduled (cron)' if not dry else 'manual (dry run)'} |",
+            f"| Repo filter | {repo_filter or 'all'} |",
+            f"| New/updated PRs detected | {pr_count} |",
+            f"| Test plans built | {plan_count} |",
+            f"| Unique workflows to run | {wf_count} |",
+            f"| Dry run | {dry} |",
+            "",
+          ]
+
+          if pr_count == 0:
+              lines += ["### No new or updated PRs detected in this run.", ""]
+          else:
+              prs_file = Path("state/prs_to_process.json")
+              if prs_file.exists():
+                  prs = json.loads(prs_file.read_text())
+                  lines += ["### PRs Processed", "",
+                            "| PR | Source Repo | Author | Risk | Change Type | Modules |",
+                            "|---|---|---|---|---|---|"]
+                  for pr in prs:
+                      pr_num  = pr["pr_number"]
+                      url     = pr.get("pr_url","")
+                      title   = pr.get("pr_title","")[:45]
+                      repo_n  = pr.get("_repo_name","?")
+                      author  = pr.get("pr_author","?")
+                      risk    = pr.get("risk_level","?").upper()
+                      ctype   = pr.get("change_type","?")
+                      modules = ", ".join(pr.get("modules_affected",[]))
+                      lines.append(
+                          f"| [#{pr_num} {title}]({url}) | {repo_n} | {author} | **{risk}** | {ctype} | {modules} |")
+                  lines.append("")
+
+              # Per-PR test category summary
+              lines += ["### Test Plans", ""]
+              for pr in prs:
+                  pr_num    = pr["pr_number"]
+                  repo_name = pr.get("_repo_name","cobalt_search")
+                  plan_file = Path(f"state/repos/{repo_name}/test_plans/pr_{pr_num}.json")
+                  if not plan_file.exists():
+                      continue
+                  plan    = json.loads(plan_file.read_text())
+                  pr_url  = plan.get("pr_url","")
+                  cats    = ", ".join(plan.get("test_categories",[]))
+                  wf_list = plan.get("dotnet_workflows",[])
+                  reason  = plan.get("reason","")
+                  if plan.get("skip_all"):
+                      lines.append(f"**[PR #{pr_num}]({pr_url})** `{repo_name}` — SKIPPED ({reason})")
+                  else:
+                      lines.append(f"**[PR #{pr_num}]({pr_url})** `{repo_name}` — {len(wf_list)} workflow(s)")
+                      lines.append(f"> Reason: `{reason}`")
+                      lines.append(f"> TestCategories: `{cats}`")
+                  lines.append("")
+
+              wf_file = Path("state/all_impacted_workflows.json")
+              if wf_file.exists():
+                  all_wf = json.loads(wf_file.read_text())
+                  if all_wf:
+                      lines += ["### All Impacted Workflows", "",
+                                "| Workflow |", "|---|"]
+                      for wf in all_wf:
+                          lines.append(f"| `{wf}.yml` |")
+                      lines.append("")
+
+          with open(os.environ.get("GITHUB_STEP_SUMMARY","summary.md"), "a") as f:
+              f.write("\n".join(lines) + "\n")
+          print("\n".join(lines))
+          EOF
