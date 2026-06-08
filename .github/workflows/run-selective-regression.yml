@@ -281,7 +281,7 @@ jobs:
         if: steps.discover.outputs.pr_count != '0'
         env:
           GH_TOKEN: ${{ secrets.REGRESSION_TRIGGER_PAT }}
-          REPO:     ${{ github.repository }}
+          REPO:     tr/CobaltRegressionTesting
           TEST_ENV: ${{ inputs.env }}
         run: |
           python3 - <<'EOF'
