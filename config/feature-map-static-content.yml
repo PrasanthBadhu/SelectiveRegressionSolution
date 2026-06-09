@@ -38,40 +38,33 @@ last_updated: "2026-06-09"
 # MODULE MAPPINGS  (key = top-level folder name in cobalt_static-content)
 # Add one entry per top-level folder.  risk_multiplier: high | medium | low
 # ──────────────────────────────────────────────────────────────────────────────
-modules:
-  # TODO: replace these examples with the actual top-level folders in
-  #       tr/cobalt_static-content once you have reviewed the repo structure.
+modules: {}
+  # TODO: replace {} with actual top-level folder entries once you have reviewed
+  #       tr/cobalt_static-content.  Example — if the repo has "WLNStaticContent/":
   #
-  # Example entries — uncomment and edit:
-  #
-  # WLNStaticContent:
-  #   description: "WLN static assets (CSS, JS, images)"
-  #   test_categories: [WebsiteCore1, WebsiteCore2, WebsiteDelivery, EdgeSmokeFeatures]
-  #   risk_multiplier: medium
-  #
-  # CarswellStaticContent:
-  #   description: "Carswell static assets"
-  #   test_categories: [CoreSearch, Search, EdgeSmokeFeatures]
-  #   risk_multiplier: low
-  #
-  # SharedStaticContent:
-  #   description: "Shared / common static assets"
-  #   test_categories: [WebsiteCore1, WebsiteCore2, EdgeSmokeFeatures]
-  #   risk_multiplier: medium
+  # modules:
+  #   WLNStaticContent:
+  #     description: "WLN static assets (CSS, JS, images)"
+  #     test_categories: [WebsiteCore1, WebsiteCore2, WebsiteDelivery, EdgeSmokeFeatures]
+  #     risk_multiplier: medium
+  #   CarswellStaticContent:
+  #     description: "Carswell static assets"
+  #     test_categories: [CoreSearch, Search, EdgeSmokeFeatures]
+  #     risk_multiplier: low
 
 # ──────────────────────────────────────────────────────────────────────────────
 # SUB-MODULE PATH MAPPINGS  (key = file path prefix, longest match wins)
 # ──────────────────────────────────────────────────────────────────────────────
-sub_paths:
+sub_paths: {}
   # TODO: add sub-path overrides as needed.  Example:
   #
-  # "WLNStaticContent/css/mobile/":
-  #   product: Mobile
-  #   test_categories: [WebsiteMobile]
-  #
-  # "WLNStaticContent/css/aunz/":
-  #   product: AUNZ
-  #   test_categories: [AnzEdgeRegression, AnzWebsite]
+  # sub_paths:
+  #   "WLNStaticContent/css/mobile/":
+  #     product: Mobile
+  #     test_categories: [WebsiteMobile]
+  #   "WLNStaticContent/css/aunz/":
+  #     product: AUNZ
+  #     test_categories: [AnzEdgeRegression, AnzWebsite]
 
 # ──────────────────────────────────────────────────────────────────────────────
 # KEYWORD MAPPINGS  (matched against PR title + body, case-insensitive)

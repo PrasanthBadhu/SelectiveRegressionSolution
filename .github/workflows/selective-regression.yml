@@ -324,8 +324,8 @@ jobs:
               return _fm_cache[path]
 
           def classify_file(filepath, fm):
-              fm_modules   = fm.get("modules", {})
-              fm_sub_paths = fm.get("sub_paths", {})
+              fm_modules   = (fm.get("modules") or {})
+              fm_sub_paths = (fm.get("sub_paths") or {})
               # 1. Sub-path: longest prefix match wins
               best_prefix = None
               best_entry  = None

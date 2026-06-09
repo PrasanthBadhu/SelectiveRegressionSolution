@@ -37,52 +37,28 @@ last_updated: "2026-06-09"
 # MODULE MAPPINGS  (key = top-level folder name in cobalt_website)
 # Add one entry per top-level folder.  risk_multiplier: high | medium | low
 # ──────────────────────────────────────────────────────────────────────────────
-modules:
-  # TODO: replace these examples with the actual top-level folders in
-  #       tr/cobalt_website once you have reviewed the repo structure.
+modules: {}
+  # TODO: replace {} with actual top-level folder entries once you have reviewed
+  #       tr/cobalt_website.  Example:
   #
-  # Example entries — uncomment and edit:
-  #
-  # WLNWebsite:
-  #   description: "Westlaw Next website components"
-  #   test_categories:
-  #     - WebsiteCore1
-  #     - WebsiteCore2
-  #     - WebsiteDelivery
-  #     - EdgeSmokeFeatures
-  #   risk_multiplier: medium
-  #
-  # CarswellWebsite:
-  #   description: "Carswell website components (Canada)"
-  #   test_categories:
-  #     - CoreSearch
-  #     - Search
-  #     - WebsiteMisc
-  #     - EdgeSmokeFeatures
-  #   risk_multiplier: medium
-  #
-  # WLNWebsiteCommon:
-  #   description: "Shared website foundation layer"
-  #   test_categories:
-  #     - WebsiteCore1
-  #     - WebsiteCore2
-  #     - WebsiteDelivery
-  #     - WebsiteMisc
-  #     - EdgeSmokeFeatures
-  #   risk_multiplier: high
-  #
-  # ANZWebsite:
-  #   description: "Australia / New Zealand website"
-  #   test_categories:
-  #     - AnzEdgeRegression
-  #     - AnzWebsite
-  #     - EdgeSmokeFeatures
-  #   risk_multiplier: medium
+  # modules:
+  #   WLNWebsite:
+  #     description: "Westlaw Next website components"
+  #     test_categories: [WebsiteCore1, WebsiteCore2, WebsiteDelivery, EdgeSmokeFeatures]
+  #     risk_multiplier: medium
+  #   WLNWebsiteCommon:
+  #     description: "Shared website foundation layer"
+  #     test_categories: [WebsiteCore1, WebsiteCore2, WebsiteDelivery, WebsiteMisc, EdgeSmokeFeatures]
+  #     risk_multiplier: high
+  #   ANZWebsite:
+  #     description: "Australia / New Zealand website"
+  #     test_categories: [AnzEdgeRegression, AnzWebsite, EdgeSmokeFeatures]
+  #     risk_multiplier: medium
 
 # ──────────────────────────────────────────────────────────────────────────────
 # SUB-MODULE PATH MAPPINGS  (key = file path prefix, longest match wins)
 # ──────────────────────────────────────────────────────────────────────────────
-sub_paths:
+sub_paths: {}
   # TODO: add sub-path overrides as needed.  Example:
   #
   # "WLNWebsite/src/com/tr/cobalt/web/aunz/":

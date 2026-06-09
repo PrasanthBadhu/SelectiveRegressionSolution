@@ -244,10 +244,10 @@ def main() -> None:
         if fm_path.exists():
             fm = _yaml.safe_load(fm_path.read_text())
             global MODULE_PREFIXES, SUB_PATH_PRODUCTS
-            MODULE_PREFIXES = {mod: mod + "/" for mod in fm.get("modules", {}).keys()}
+            MODULE_PREFIXES = {mod: mod + "/" for mod in (fm.get("modules") or {}).keys()}
             SUB_PATH_PRODUCTS = {
                 prefix: entry.get("product", prefix.split("/")[-2] if "/" in prefix else prefix)
-                for prefix, entry in fm.get("sub_paths", {}).items()
+                for prefix, entry in (fm.get("sub_paths") or {}).items()
             }
             print(f"  Loaded {len(MODULE_PREFIXES)} module(s) and "
                   f"{len(SUB_PATH_PRODUCTS)} sub-path(s) from {fm_path}", file=sys.stderr)

@@ -320,8 +320,8 @@ jobs:
               return _fm_cache[path]
 
           def classify_file(filepath, fm):
-              fm_modules   = fm.get("modules", {})
-              fm_sub_paths = fm.get("sub_paths", {})
+              fm_modules   = (fm.get("modules") or {})
+              fm_sub_paths = (fm.get("sub_paths") or {})
               best_prefix  = None
               best_entry   = None
               for prefix, entry in fm_sub_paths.items():
