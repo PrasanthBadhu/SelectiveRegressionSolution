@@ -557,13 +557,6 @@ keywords:
       - Trillium
       - TrilliumWebSite
 
-  analytics:
-    product: Analytics
-    test_categories:
-      - WLAnalyticsIndigo
-      - AnalyticsAlertsEnhancements
-      - WLAnalytics
-
 # ──────────────────────────────────────────────────────────────────────────────
 # RISK ESCALATION
 # When risk_level = high, these TestCategory values are ALWAYS added.

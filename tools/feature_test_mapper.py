@@ -334,11 +334,11 @@ def resolve_suites(impact: dict, feature_map: dict) -> dict:
     title       = impact.get("pr_title", "")
     body        = impact.get("pr_body", "")
 
-    fm_modules   = feature_map.get("modules",            {})
-    fm_sub_paths = feature_map.get("sub_paths",          {})
-    fm_keywords  = feature_map.get("keywords",           {})
-    fm_ct_rules  = feature_map.get("change_type_rules",  {})
-    fm_high_risk = feature_map.get("high_risk_always_add", {})
+    fm_modules   = (feature_map.get("modules")            or {})
+    fm_sub_paths = (feature_map.get("sub_paths")          or {})
+    fm_keywords  = (feature_map.get("keywords")           or {})
+    fm_ct_rules  = (feature_map.get("change_type_rules")  or {})
+    fm_high_risk = (feature_map.get("high_risk_always_add") or {})
 
     # Change-type overrides
     ct_rule = fm_ct_rules.get(change_type, {})
