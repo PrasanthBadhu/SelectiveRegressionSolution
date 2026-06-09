@@ -4,123 +4,1013 @@
 #
 # Purpose:
 #   Maps tr/cobalt_website file paths / keywords to TestCategory names.
+#   TestCategory names match @SET CATEGORY_NAME=TestCategory=<name> in
+#   config/dotnet/**/*.bat files in tr/CobaltRegressionTesting.
 #
-# HOW TO FILL IN MODULES:
-#   Look at the top-level folders in tr/cobalt_website and add one entry
-#   per folder.  Example — if the repo has a folder "WLNWebsite/":
+# Mapping chain:
+#   cobalt_website changed files
+#     -> module / sub_path / keyword
+#       -> test_categories (this file)
+#         -> bat files with CATEGORY_NAME=TestCategory=<name>
+#           -> WL_DNet_*.yml workflows
 #
-#     modules:
-#       WLNWebsite:
-#         description: "WLN website components"
-#         test_categories: [WebsiteCore1, WebsiteCore2, WebsiteDelivery]
-#         risk_multiplier: medium
+# Priority order (highest wins):
+#   1. sub_path  — longest prefix match on the changed file path
+#   2. module    — top-level folder prefix match
+#   3. keyword   — PR title / body text match (case-insensitive)
 #
-#   The workflow does a prefix match: any file whose path starts with
-#   "<module_name>/" is assigned to that module.
-#
-# HOW TO FILL IN SUB_PATHS:
-#   Add deeper-path overrides (longer match wins over module).  Example:
-#
-#     sub_paths:
-#       "WLNWebsite/src/com/tr/cobalt/web/aunz/":
-#         product: AUNZ
-#         test_categories: [AnzEdgeRegression, AnzWebsite]
-#
-# HOW TO FILL IN KEYWORDS:
-#   Keywords are matched against PR title + body (case-insensitive).
+# NOTE: Module names and sub-path prefixes are based on common Cobalt website
+#       folder conventions.  Run `git ls-tree HEAD --name-only` in tr/cobalt_website
+#       to confirm actual top-level folder names and adjust entries as needed.
 ################################################################################
 
-version: "1.0"
+version: "2.0"
 last_updated: "2026-06-09"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # MODULE MAPPINGS  (key = top-level folder name in cobalt_website)
-# Add one entry per top-level folder.  risk_multiplier: high | medium | low
+# Prefix match: any file whose path starts with "<key>/" maps here.
+# risk_multiplier: high | medium | low
 # ──────────────────────────────────────────────────────────────────────────────
-modules: {}
-  # TODO: replace {} with actual top-level folder entries once you have reviewed
-  #       tr/cobalt_website.  Example:
-  #
-  # modules:
-  #   WLNWebsite:
-  #     description: "Westlaw Next website components"
-  #     test_categories: [WebsiteCore1, WebsiteCore2, WebsiteDelivery, EdgeSmokeFeatures]
-  #     risk_multiplier: medium
-  #   WLNWebsiteCommon:
-  #     description: "Shared website foundation layer"
-  #     test_categories: [WebsiteCore1, WebsiteCore2, WebsiteDelivery, WebsiteMisc, EdgeSmokeFeatures]
-  #     risk_multiplier: high
-  #   ANZWebsite:
-  #     description: "Australia / New Zealand website"
-  #     test_categories: [AnzEdgeRegression, AnzWebsite, EdgeSmokeFeatures]
-  #     risk_multiplier: medium
+modules:
 
-# ──────────────────────────────────────────────────────────────────────────────
-# SUB-MODULE PATH MAPPINGS  (key = file path prefix, longest match wins)
-# ──────────────────────────────────────────────────────────────────────────────
-sub_paths: {}
-  # TODO: add sub-path overrides as needed.  Example:
-  #
-  # "WLNWebsite/src/com/tr/cobalt/web/aunz/":
-  #   product: AUNZ
-  #   test_categories: [AnzEdgeRegression, AnzWebsite, AnzDocuments]
-  #
-  # "WLNWebsite/src/com/tr/cobalt/web/mobile/":
-  #   product: Mobile
-  #   test_categories: [WebsiteMobile]
-
-# ──────────────────────────────────────────────────────────────────────────────
-# KEYWORD MAPPINGS  (matched against PR title + body, case-insensitive)
-# ──────────────────────────────────────────────────────────────────────────────
-keywords:
-  website:
+  WLNWebsite:
+    description: "Core Westlaw Next website — homepage, navigation, search results, documents"
     test_categories:
+      - CoreWebsite
       - WebsiteCore1
       - WebsiteCore2
+      - CoreSearch
+      - GlobalSearch
+      - MiscellaneousSearch
+      - SearchMiscellaneous
       - EdgeSmokeFeatures
-  delivery:
+    risk_multiplier: high
+
+  WLNWebsiteCommon:
+    description: "Shared website foundation — templates, frameworks, common services"
+    test_categories:
+      - CoreWebsite
+      - WebsiteCore1
+      - WebsiteCore2
+      - WebsiteMisc
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  CobaltPlatformWeb:
+    description: "Cross-product web platform layer shared by all website modules"
+    test_categories:
+      - CoreWebsite
+      - WebsiteCore1
+      - WebsiteCore2
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  CarswellWebsite:
+    description: "Carswell / LN Canada website"
+    test_categories:
+      - Trillium
+      - TrilliumWebSite
+      - Search
+      - Alerts
+      - AlertsAdmin
+      - ContentType
+      - CopyHyperlink
+      - CustomPages
+      - CanadaDocDisplay
+      - DocumentMisc
+      - MasterTaxonomy
+      - WebsiteMisc
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  ANZWebsite:
+    description: "Australia / New Zealand website"
+    test_categories:
+      - AnzWebsite
+      - AnzEdgeRegression
+      - AnzDocuments
+      - AnzFacet
+      - AnzFavorites
+      - AnzFindAndPrint
+      - AnzNzFindAndPrint
+      - AnzFoldering
+      - NzFormsNPrecedent
+      - NzLawlink
+      - AnzNotes
+      - AnzRelatedInfo
+      - AnzResponsive
+      - AnzAlerts
+      - AnzContacts
+      - AnzContinuousClient
+      - AnzCustomPages
+      - AuProdSmokeTest
+      - WLPASmoke
+      - NzProdSmokeTest
+      - WLPNZSmoke
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  WFAWebsite:
+    description: "West / Federal / Administrative website"
+    test_categories:
+      - CoreWebsite
+      - WebsiteCore1
+      - CoreSearch
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  WebsiteDelivery:
+    description: "Document delivery on website — DOCX, print, copy"
     test_categories:
       - WebsiteDelivery
+      - DOCX
+      - PrPSynopsisDelivery
+      - ResearchReportsDelivery
+      - RelatedInfoDelivery
       - EdgeSmokeFeatures
-  homepage:
-    test_categories:
-      - WebsiteCore1
-      - WebsiteCore2
-      - EdgeSmokeFeatures
-  navigation:
-    test_categories:
-      - WebsiteCore1
-      - EdgeSmokeFeatures
-  mobile:
+    risk_multiplier: medium
+
+  WebsiteMobile:
+    description: "Mobile web experience"
     test_categories:
       - WebsiteMobile
+      - AlertsMobile
+      - AnzResponsive
       - EdgeSmokeFeatures
-  search:
-    test_categories:
-      - CoreSearch
-      - EdgeSmokeFeatures
-  aunz:
-    test_categories:
-      - AnzEdgeRegression
-      - AnzWebsite
-  canada:
-    test_categories:
-      - CoreSearch
-      - Search
-      - WebsiteMisc
-  alert:
+    risk_multiplier: medium
+
+  WebsiteAlerts:
+    description: "Alerts feature on website"
     test_categories:
       - AlertAccess
+      - AlertsMobile
+      - CapitolWatch
+      - Alerts
+      - AlertsAdmin
+      - AnzAlerts
       - EdgeSmokeFeatures
-  folder:
+    risk_multiplier: medium
+
+  WebsiteFoldering:
+    description: "Folders and research organizer on website"
     test_categories:
       - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - FolderRecommendations
+      - FolderRedesign1
+      - FolderRedesign2
+      - FolderAnalysisKeyCite
+      - AnzFoldering
+      - NewSmartFolders
+      - SmartFolders
       - EdgeSmokeFeatures
-  analytics:
+    risk_multiplier: medium
+
+  WebsiteAnalytics:
+    description: "Analytics and legal analytics integration on website"
     test_categories:
       - WLAnalytics
       - WLAnalyticsIndigo
+      - AnalyticsAlertsEnhancements
+      - LegalAnalyticsApi
+      - LitigationAnalytics
+      - TrdLegalAnalyticsUi
+      - TrdSmoke
+      - TrdApi
+      - TrdFacets
       - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  WebsitePrecision:
+    description: "Westlaw Precision / Advantage features on website"
+    test_categories:
+      - WestlawPrecision1
+      - WestlawPrecision2
+      - WestlawPrecision3
+      - WestlawPrecision4
+      - WestlawPrecision5
+      - WestlawPrecision6
+      - EdgeSmoke2.0
+      - GraphicalHistory
+      - CoCites
+      - ResearchOutlineBuilder
+      - ParallelSearch
+      - LitigationAnalytics
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  WebsiteKeyCite:
+    description: "KeyCite citations and related info on website"
+    test_categories:
+      - RelatedInfoKeyciteCommand
+      - FolderAnalysisKeyCite
+      - RelatedInfoContent
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoIpTools
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - RelatedInfoReferences
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  WebsiteAnnotations:
+    description: "Annotations, highlights and notes on website"
+    test_categories:
+      - EditAnnotationsColorEdge_Regression
+      - EditAnnotationsColorWln_Regression
+      - SharedAnnotations
+      - ParagraphHighlighting
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  WebsiteResearchReports:
+    description: "Research reports and recommendations on website"
+    test_categories:
+      - ResearchReports
+      - ResearchReportsDelivery
+      - ResearchRecommendations1
+      - ResearchRecommendations2
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  WebsiteRedlining:
+    description: "Document redlining on website"
+    test_categories:
+      - Redlining
+      - RedliningRegressionTestSuite
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  WebsiteQuickCheck:
+    description: "Quick Check cite-checking feature on website"
+    test_categories:
+      - QuickCheckUiCheckWork_1
+      - QuickCheckUiCheckWork_2
+      - QuickCheckUiCheckWork_3
+      - QuickCheckUiCheckWork_4
+      - QuickCheckUiJudicial_1
+      - QuickCheckUiJudicial_2
+      - QuickCheckUiJudicial_3
+      - QuickCheckUiOpponent
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  WebsiteWeblinks:
+    description: "Government weblinks integration on website"
+    test_categories:
+      - GovernmentWeblinks
+      - Links
+      - CoreSearch
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  WebsiteEnhancements:
+    description: "WLN enhancement features on website"
+    test_categories:
+      - Wln_Enhancement_tests
+      - Wln_Enhancement_tests1
+      - Wln_Enhancement_tests2
+      - Wln_Enhancement_tests3
+      - Wln_Enhancement_tests_indigo
+      - ExpertRelationships
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+# ──────────────────────────────────────────────────────────────────────────────
+# SUB-MODULE PATH MAPPINGS  (key = file path prefix, longest match wins)
+# Priority 1 (highest).  Paths follow common TR Cobalt Maven layout:
+#   <Module>/src/main/java/com/tr/cobalt/web/<feature>/
+# Adjust once actual cobalt_website directory tree is confirmed.
+# ──────────────────────────────────────────────────────────────────────────────
+sub_paths:
+
+  # ── ANZ / Australia / New Zealand ───────────────────────────────────────────
+  "ANZWebsite/":
+    product: AUNZ
+    test_categories:
+      - AnzWebsite
+      - AnzEdgeRegression
+      - AnzDocuments
+      - AnzFacet
+      - AnzFavorites
+      - AnzFindAndPrint
+      - AnzNzFindAndPrint
+      - AnzFoldering
+      - NzFormsNPrecedent
+      - NzLawlink
+      - AnzNotes
+      - AnzRelatedInfo
+      - AnzResponsive
+      - AnzAlerts
+      - AnzContacts
+      - AnzContinuousClient
+      - AnzCustomPages
+      - AuProdSmokeTest
+      - WLPASmoke
+      - NzProdSmokeTest
+      - WLPNZSmoke
+      - EdgeSmokeFeatures
+
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/aunz/":
+    product: AUNZ
+    test_categories:
+      - AnzWebsite
+      - AnzEdgeRegression
+      - AnzDocuments
+      - AnzFacet
+      - AnzFavorites
+      - AnzFindAndPrint
+      - AnzNzFindAndPrint
+      - AnzFoldering
+      - NzFormsNPrecedent
+      - NzLawlink
+      - AnzNotes
+      - AnzRelatedInfo
+      - AnzResponsive
+      - AnzAlerts
+      - AnzContacts
+      - AnzContinuousClient
+      - AnzCustomPages
+      - AuProdSmokeTest
+      - WLPASmoke
+      - NzProdSmokeTest
+      - WLPNZSmoke
+      - EdgeSmokeFeatures
+
+  # ── Canada / Carswell ────────────────────────────────────────────────────────
+  "CarswellWebsite/":
+    product: Canada
+    test_categories:
+      - Trillium
+      - TrilliumWebSite
+      - Search
+      - Alerts
+      - AlertsAdmin
+      - ContentType
+      - CopyHyperlink
+      - CustomPages
+      - CanadaDocDisplay
+      - DocumentMisc
+      - MasterTaxonomy
+      - WebsiteMisc
+      - EdgeSmoke
+      - EdgeSmokeFeatures
+
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/canada/":
+    product: Canada
+    test_categories:
+      - Trillium
+      - TrilliumWebSite
+      - Search
+      - WebsiteMisc
+      - EdgeSmokeFeatures
+
+  # ── Mobile ───────────────────────────────────────────────────────────────────
+  "WebsiteMobile/":
+    product: Mobile
+    test_categories:
+      - WebsiteMobile
+      - AlertsMobile
+      - AnzResponsive
+      - EdgeSmokeFeatures
+
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/mobile/":
+    product: Mobile
+    test_categories:
+      - WebsiteMobile
+      - AlertsMobile
+      - EdgeSmokeFeatures
+
+  # ── Delivery ─────────────────────────────────────────────────────────────────
+  "WebsiteDelivery/":
+    product: Delivery
+    test_categories:
+      - WebsiteDelivery
+      - DOCX
+      - PrPSynopsisDelivery
+      - ResearchReportsDelivery
+      - RelatedInfoDelivery
+      - EdgeSmokeFeatures
+
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/delivery/":
+    product: Delivery
+    test_categories:
+      - WebsiteDelivery
+      - DOCX
+      - PrPSynopsisDelivery
+      - RelatedInfoDelivery
+      - EdgeSmokeFeatures
+
+  # ── Alerts ───────────────────────────────────────────────────────────────────
+  "WebsiteAlerts/":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - CapitolWatch
+      - Alerts
+      - AlertsAdmin
+      - AnzAlerts
+      - EdgeSmokeFeatures
+
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/alerts/":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - CapitolWatch
+      - Alerts
+      - AlertsAdmin
+      - EdgeSmokeFeatures
+
+  # ── Analytics ────────────────────────────────────────────────────────────────
+  "WebsiteAnalytics/":
+    product: Analytics
+    test_categories:
+      - WLAnalytics
+      - WLAnalyticsIndigo
+      - AnalyticsAlertsEnhancements
+      - LegalAnalyticsApi
+      - LitigationAnalytics
+      - TrdLegalAnalyticsUi
+      - TrdSmoke
+      - TrdApi
+      - TrdFacets
+      - EdgeSmokeFeatures
+
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/analytics/":
+    product: Analytics
+    test_categories:
+      - WLAnalytics
+      - WLAnalyticsIndigo
+      - AnalyticsAlertsEnhancements
+      - LegalAnalyticsApi
+      - LitigationAnalytics
+      - TrdLegalAnalyticsUi
+      - TrdSmoke
+      - TrdApi
+      - TrdFacets
+      - EdgeSmokeFeatures
+
+  # ── Foldering / Research Organizer ───────────────────────────────────────────
+  "WebsiteFoldering/":
+    product: Foldering
+    test_categories:
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - FolderRecommendations
+      - FolderRedesign1
+      - FolderRedesign2
+      - FolderAnalysisKeyCite
+      - AnzFoldering
+      - NewSmartFolders
+      - SmartFolders
+      - EdgeSmokeFeatures
+
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/folder/":
+    product: Foldering
+    test_categories:
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - FolderRecommendations
+      - FolderRedesign1
+      - FolderRedesign2
+      - FolderAnalysisKeyCite
+      - NewSmartFolders
+      - SmartFolders
+      - EdgeSmokeFeatures
+
+  # ── KeyCite / Related Info ───────────────────────────────────────────────────
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/keycite/":
+    product: KeyCite
+    test_categories:
+      - RelatedInfoKeyciteCommand
+      - FolderAnalysisKeyCite
+      - RelatedInfoContent
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoTabs
+      - RelatedInfoReferences
+      - EdgeSmokeFeatures
+
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/relatedinfo/":
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoKeyciteCommand
+      - RelatedInfoIpTools
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - RelatedInfoReferences
+      - EdgeSmokeFeatures
+
+  # ── Annotations ──────────────────────────────────────────────────────────────
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/annotation/":
+    product: Annotations
+    test_categories:
+      - EditAnnotationsColorEdge_Regression
+      - EditAnnotationsColorWln_Regression
+      - SharedAnnotations
+      - ParagraphHighlighting
+      - EdgeSmokeFeatures
+
+  # ── Westlaw Precision ────────────────────────────────────────────────────────
+  "WebsitePrecision/":
+    product: WestlawPrecision
+    test_categories:
+      - WestlawPrecision1
+      - WestlawPrecision2
+      - WestlawPrecision3
+      - WestlawPrecision4
+      - WestlawPrecision5
+      - WestlawPrecision6
+      - EdgeSmoke2.0
+      - GraphicalHistory
+      - CoCites
+      - ResearchOutlineBuilder
+      - ParallelSearch
+      - LitigationAnalytics
+      - EdgeSmokeFeatures
+
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/precision/":
+    product: WestlawPrecision
+    test_categories:
+      - WestlawPrecision1
+      - WestlawPrecision2
+      - WestlawPrecision3
+      - WestlawPrecision4
+      - WestlawPrecision5
+      - WestlawPrecision6
+      - EdgeSmoke2.0
+      - GraphicalHistory
+      - CoCites
+      - ResearchOutlineBuilder
+      - ParallelSearch
+      - LitigationAnalytics
+      - EdgeSmokeFeatures
+
+  # ── Quick Check ──────────────────────────────────────────────────────────────
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/quickcheck/":
+    product: QuickCheck
+    test_categories:
+      - QuickCheckUiCheckWork_1
+      - QuickCheckUiCheckWork_2
+      - QuickCheckUiCheckWork_3
+      - QuickCheckUiCheckWork_4
+      - QuickCheckUiJudicial_1
+      - QuickCheckUiJudicial_2
+      - QuickCheckUiJudicial_3
+      - QuickCheckUiOpponent
+      - EdgeSmokeFeatures
+
+  # ── Redlining ────────────────────────────────────────────────────────────────
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/redlining/":
+    product: Redlining
+    test_categories:
+      - Redlining
+      - RedliningRegressionTestSuite
+      - EdgeSmokeFeatures
+
+  # ── Tax ──────────────────────────────────────────────────────────────────────
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/tax/":
+    product: Tax
+    test_categories:
+      - WLNTax
+      - WLNTaxLiveChat
+      - WLNTaxLiveChat_OffHours
+      - EdgeSmokeFeatures
+
+  # ── Business Law Center ──────────────────────────────────────────────────────
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/blc/":
+    product: BusinessLawCenter
+    test_categories:
+      - BLCCommon
+      - Agreements
+      - Alert
+      - FilerSearch
+      - NonBillable
+      - SecFilingsSectionSearchFandQdocuments
+      - SecFilingsSectionSearchKdocuments
+      - SectionSearch
+      - EdgeSmokeFeatures
+
+  # ── Homepage ─────────────────────────────────────────────────────────────────
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/homepage/":
+    product: Website
+    test_categories:
+      - CoreWebsite
+      - WebsiteCore1
+      - WebsiteCore2
+      - HomePage
+      - EdgeSmokeFeatures
+
+  # ── Weblinks ─────────────────────────────────────────────────────────────────
+  "WebsiteWeblinks/":
+    product: Weblinks
+    test_categories:
+      - GovernmentWeblinks
+      - Links
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/weblinks/":
+    product: Weblinks
+    test_categories:
+      - GovernmentWeblinks
+      - Links
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  # ── Research Reports ─────────────────────────────────────────────────────────
+  "WLNWebsite/src/main/java/com/tr/cobalt/web/researchreports/":
+    product: ResearchReports
+    test_categories:
+      - ResearchReports
+      - ResearchReportsDelivery
+      - ResearchRecommendations1
+      - ResearchRecommendations2
+      - EdgeSmokeFeatures
+
+# ──────────────────────────────────────────────────────────────────────────────
+# KEYWORD MAPPINGS  (matched against PR title + body, case-insensitive)
+# Priority 3 (lowest — fires when no module or sub_path match is found).
+# ──────────────────────────────────────────────────────────────────────────────
+keywords:
+
+  website:
+    product: Website
+    test_categories:
+      - CoreWebsite
+      - WebsiteCore1
+      - WebsiteCore2
+      - EdgeSmokeFeatures
+
+  homepage:
+    product: Website
+    test_categories:
+      - CoreWebsite
+      - WebsiteCore1
+      - WebsiteCore2
+      - HomePage
+      - EdgeSmokeFeatures
+
+  navigation:
+    product: Website
+    test_categories:
+      - CoreWebsite
+      - WebsiteCore1
+      - EdgeSmokeFeatures
+
+  delivery:
+    product: Delivery
+    test_categories:
+      - WebsiteDelivery
+      - DOCX
+      - PrPSynopsisDelivery
+      - ResearchReportsDelivery
+      - RelatedInfoDelivery
+      - EdgeSmokeFeatures
+
+  mobile:
+    product: Mobile
+    test_categories:
+      - WebsiteMobile
+      - AlertsMobile
+      - EdgeSmokeFeatures
+
+  search:
+    product: Search
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  aunz:
+    product: AUNZ
+    test_categories:
+      - AnzEdgeRegression
+      - AnzDocuments
+      - AnzFacet
+      - AnzFindAndPrint
+      - AnzNzFindAndPrint
+      - AnzRelatedInfo
+      - AnzWebsite
+      - AuProdSmokeTest
+      - NzProdSmokeTest
+      - EdgeSmokeFeatures
+
+  anz:
+    product: AUNZ
+    test_categories:
+      - AnzEdgeRegression
+      - AnzDocuments
+      - AnzFacet
+      - AnzFindAndPrint
+      - AnzRelatedInfo
+      - AuProdSmokeTest
+      - NzProdSmokeTest
+      - EdgeSmokeFeatures
+
+  canada:
+    product: Canada
+    test_categories:
+      - Search
+      - Alerts
+      - AlertsAdmin
+      - ContentType
+      - CopyHyperlink
+      - CustomPages
+      - CanadaDocDisplay
+      - DocumentMisc
+      - Trillium
+      - TrilliumWebSite
+      - EdgeSmoke
+      - HomePage
+      - MasterTaxonomy
+      - WebsiteMisc
+
+  alert:
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - CapitolWatch
+      - Alerts
+      - AlertsAdmin
+      - EdgeSmokeFeatures
+
+  folder:
+    product: Foldering
+    test_categories:
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - FolderRecommendations
+      - FolderRedesign1
+      - FolderRedesign2
+      - NewSmartFolders
+      - SmartFolders
+      - EdgeSmokeFeatures
+
+  analytics:
+    product: Analytics
+    test_categories:
+      - WLAnalytics
+      - WLAnalyticsIndigo
+      - AnalyticsAlertsEnhancements
+      - LegalAnalyticsApi
+      - LitigationAnalytics
+      - TrdLegalAnalyticsUi
+      - TrdSmoke
+      - TrdApi
+      - TrdFacets
+      - EdgeSmokeFeatures
+
+  precision:
+    product: WestlawPrecision
+    test_categories:
+      - WestlawPrecision1
+      - WestlawPrecision2
+      - WestlawPrecision3
+      - WestlawPrecision4
+      - WestlawPrecision5
+      - WestlawPrecision6
+      - EdgeSmoke2.0
+      - GraphicalHistory
+      - CoCites
+      - ResearchOutlineBuilder
+      - ParallelSearch
+      - LitigationAnalytics
+      - EdgeSmokeFeatures
+
+  advantage:
+    product: WestlawAdvantage
+    test_categories:
+      - WestlawPrecision1
+      - WestlawPrecision2
+      - WestlawPrecision3
+      - WestlawPrecision4
+      - WestlawPrecision5
+      - WestlawPrecision6
+      - EdgeSmoke2.0
+      - CoCites
+      - GraphicalHistory
+      - EdgeSmokeFeatures
+
+  keycite:
+    product: KeyCite
+    test_categories:
+      - RelatedInfoKeyciteCommand
+      - FolderAnalysisKeyCite
+      - RelatedInfoContent
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoTabs
+      - RelatedInfoReferences
+      - EdgeSmokeFeatures
+
+  "key cite":
+    product: KeyCite
+    test_categories:
+      - RelatedInfoKeyciteCommand
+      - FolderAnalysisKeyCite
+      - EdgeSmokeFeatures
+
+  "related info":
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoKeyciteCommand
+      - RelatedInfoIpTools
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - RelatedInfoReferences
+
+  annotation:
+    product: Annotations
+    test_categories:
+      - EditAnnotationsColorEdge_Regression
+      - EditAnnotationsColorWln_Regression
+      - SharedAnnotations
+      - ParagraphHighlighting
+      - EdgeSmokeFeatures
+
+  highlight:
+    product: Annotations
+    test_categories:
+      - ParagraphHighlighting
+      - SharedAnnotations
+      - EdgeSmokeFeatures
+
+  redlining:
+    product: Redlining
+    test_categories:
+      - Redlining
+      - RedliningRegressionTestSuite
+      - EdgeSmokeFeatures
+
+  "quick check":
+    product: QuickCheck
+    test_categories:
+      - QuickCheckUiCheckWork_1
+      - QuickCheckUiCheckWork_2
+      - QuickCheckUiCheckWork_3
+      - QuickCheckUiCheckWork_4
+      - QuickCheckUiJudicial_1
+      - QuickCheckUiJudicial_2
+      - QuickCheckUiJudicial_3
+      - QuickCheckUiOpponent
+      - EdgeSmokeFeatures
+
+  "research report":
+    product: ResearchReports
+    test_categories:
+      - ResearchReports
+      - ResearchReportsDelivery
+      - ResearchRecommendations1
+      - ResearchRecommendations2
+      - EdgeSmokeFeatures
+
+  "smart folder":
+    product: SmartFolders
+    test_categories:
+      - NewSmartFolders
+      - SmartFolders
+      - EdgeSmokeFeatures
+
+  trillium:
+    product: Trillium
+    test_categories:
+      - Trillium
+      - TrilliumWebSite
+
+  enhancements:
+    product: WLNEnhancements
+    test_categories:
+      - Wln_Enhancement_tests
+      - Wln_Enhancement_tests1
+      - Wln_Enhancement_tests2
+      - Wln_Enhancement_tests3
+      - Wln_Enhancement_tests_indigo
+      - ExpertRelationships
+      - EdgeSmokeFeatures
+
+  blc:
+    product: BusinessLawCenter
+    test_categories:
+      - BLCCommon
+      - Agreements
+      - Alert
+      - FilerSearch
+      - NonBillable
+      - SecFilingsSectionSearchFandQdocuments
+      - SecFilingsSectionSearchKdocuments
+      - SectionSearch
+
+  "business law":
+    product: BusinessLawCenter
+    test_categories:
+      - BLCCommon
+      - Agreements
+      - FilerSearch
+      - BusinessLawTransition
+
+  tax:
+    product: Tax
+    test_categories:
+      - WLNTax
+      - WLNTaxLiveChat
+      - WLNTaxLiveChat_OffHours
+      - EdgeSmokeFeatures
+
+  "tax migration":
+    product: TaxMigration
+    test_categories:
+      - WLNTax
+      - WLNTaxLiveChat
+      - WLNTaxLiveChat_OffHours
+      - LiveChat
+      - LiveChat_OffHours
+      - TermHighlight
+
+  docket:
+    product: Dockets
+    test_categories:
+      - DocketTests
+      - EdgeSmokeFeatures
+
+  california:
+    product: CaliforniaOfficialReports
+    test_categories:
+      - EdgeCaliforniaOfficialReports_Regression
+      - WlnCaliforniaOfficialReports_Regression
+      - CCPAEdge
+      - CCPAWln
+
+  weblinks:
+    product: Weblinks
+    test_categories:
+      - GovernmentWeblinks
+      - Links
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "portal manager":
+    product: PortalManager
+    test_categories:
+      - PortalManager
+      - PortalManagerSearch
+
+  "court express":
+    product: CourtExpress
+    test_categories:
+      - CourtExpress
+
+  document:
+    product: Document
+    test_categories:
+      - Document
+      - DocDisplay
+      - DOCX
+      - EdgeSmokeFeatures
+
+  wluk:
+    product: WLUK
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  "10k":
+    product: 10KSearch
+    test_categories:
+      - 10KResultsEdge
+      - 10KResultsWln
+
+  "search 4k":
+    product: Search4K
+    test_categories:
+      - Search4KUiIndigo
+      - Search4KUiWln
 
 # ──────────────────────────────────────────────────────────────────────────────
 # CHANGE-TYPE RULES
@@ -140,6 +1030,7 @@ change_type_rules:
 high_risk_always_add:
   test_categories:
     - CoreSearch
+    - GlobalSearch
     - EdgeSmokeFeatures
     - WebsiteCore1
     - WebsiteCore2
