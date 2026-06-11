@@ -180,6 +180,20 @@ jobs:
                   if state_filter == "merged" and date_from_raw:
                       range_end = date_to_raw if date_to_raw else date_from_raw
 
+                      # GitHub stores merged_at in UTC, but users enter dates in
+                      # their local timezone.  For IST (UTC+5:30), "June 10"
+                      # starts at June 9T18:30Z — PRs merged before June 10T00:00Z
+                      # UTC are still "June 10" locally and must be included.
+                      # Extending the scan start 1 day earlier covers all UTC
+                      # offsets up to UTC+24 with no false exclusions.
+                      _scan_from_dt  = (datetime.strptime(date_from_raw, "%Y-%m-%d")
+                                        - timedelta(days=1))
+                      scan_from_raw  = _scan_from_dt.strftime("%Y-%m-%d")
+                      scan_from      = _scan_from_dt.replace(tzinfo=timezone.utc)
+                      print(f"  Scan window: {scan_from_raw} -> {range_end} "
+                            f"(user date_from={date_from_raw}, -1d for TZ)",
+                            file=sys.stderr)
+
                       def _add_pr_data(pr_data, mdt):
                           key = (repo_full, pr_data["number"])
                           if key in seen_ids:
@@ -206,11 +220,11 @@ jobs:
                       s_cmd = [
                           "gh", "pr", "list", "--repo", repo_full,
                           "--state", "merged",
-                          "--search", f"merged:{date_from_raw}..{range_end}",
+                          "--search", f"merged:{scan_from_raw}..{range_end}",
                           "--limit", "500",
                           "--json", "number,title,mergedAt,createdAt,url,headRefOid"
                       ]
-                      print(f"  [search] merged:{date_from_raw}..{range_end}", file=sys.stderr)
+                      print(f"  [search] merged:{scan_from_raw}..{range_end}", file=sys.stderr)
                       sr = subprocess.run(s_cmd, capture_output=True, text=True)
                       if sr.returncode == 0 and sr.stdout.strip():
                           for pd in json.loads(sr.stdout):
@@ -218,13 +232,13 @@ jobs:
                               if not mat:
                                   continue
                               mdt = datetime.fromisoformat(mat.replace("Z", "+00:00"))
-                              if date_from and mdt < date_from:
+                              if mdt < scan_from:
                                   continue
-                              if date_to   and mdt > date_to:
+                              if date_to and mdt > date_to:
                                   continue
                               if _add_pr_data(pd, mdt):
                                   search_count += 1
-                                  print(f"  [search] #{pd['number']} [{mdt.date()}]: {pd['title'][:55]}",
+                                  print(f"  [search] #{pd['number']} merged=[{mdt.date()}]: {pd['title'][:50]}",
                                         file=sys.stderr)
                       else:
                           print(f"  [search] failed/empty — {sr.stderr[:200]}", file=sys.stderr)
@@ -232,8 +246,7 @@ jobs:
 
                       # SUPPLEMENT: Pulls API (no Search scope needed).
                       # Fetch 1000 most-recently-created merged PRs and filter
-                      # by merged_at in Python — catches any that the Search API
-                      # missed.  1000 comfortably covers weeks of normal activity.
+                      # by merged_at in Python — catches any the Search API missed.
                       supp_count = 0
                       c_cmd = [
                           "gh", "pr", "list", "--repo", repo_full,
@@ -250,13 +263,13 @@ jobs:
                               if not mat:
                                   continue
                               mdt = datetime.fromisoformat(mat.replace("Z", "+00:00"))
-                              if date_from and mdt < date_from:
+                              if mdt < scan_from:
                                   continue
-                              if date_to   and mdt > date_to:
+                              if date_to and mdt > date_to:
                                   continue
                               if _add_pr_data(pd, mdt):
                                   supp_count += 1
-                                  print(f"  [supp]   #{pd['number']} [{mdt.date()}]: {pd['title'][:55]}",
+                                  print(f"  [supp]   #{pd['number']} merged=[{mdt.date()}]: {pd['title'][:50]}",
                                         file=sys.stderr)
                       else:
                           print(f"  [supp]   failed — {cr.stderr[:200]}", file=sys.stderr)
