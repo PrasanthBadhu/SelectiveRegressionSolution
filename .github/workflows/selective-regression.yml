@@ -116,7 +116,7 @@ jobs:
           STATE:        ${{ inputs.state }}
         run: |
           python3 - <<'EOF'
-          import os, json, sys, yaml
+          import os, json, sys, yaml, subprocess
           from datetime import datetime, timezone, timedelta
           from pathlib import Path
           from github import Github, GithubException
@@ -196,16 +196,107 @@ jobs:
                           print(f"  Found PR #{pr.number}: {pr.title[:60]}", file=sys.stderr)
                       except GithubException as e:
                           print(f"  PR #{num_str} not in {repo_full}: {e}", file=sys.stderr)
+              elif state_filter == "merged" and date_from_raw:
+                  # Use gh pr list (Search API + Pulls API) so we catch PRs
+                  # created BEFORE the window but merged WITHIN it.
+                  # Sorting by created_at and breaking on created < date_from
+                  # silently drops those PRs — the two-pass approach avoids that.
+                  using_hours_back = bool(hours_back_raw and hours_back_raw.isdigit()
+                                          and int(hours_back_raw) > 0)
+                  if using_hours_back:
+                      _sq_from = date_from.strftime("%Y-%m-%dT%H:%M:%SZ")
+                      _sq_to   = date_to.strftime("%Y-%m-%dT%H:%M:%SZ")
+                      merged_q  = f"merged:{_sq_from}..{_sq_to}"
+                      scan_from = date_from
+                  else:
+                      _scan_dt  = datetime.strptime(date_from_raw, "%Y-%m-%d") - timedelta(days=1)
+                      scan_from = _scan_dt.replace(tzinfo=timezone.utc)
+                      _end      = date_to_raw if date_to_raw else date_from_raw
+                      merged_q  = f"merged:{_scan_dt.strftime('%Y-%m-%d')}..{_end}"
+                  print(f"  [search] {merged_q}", file=sys.stderr)
+
+                  seen_ids_repo = set()
+
+                  def _add(pd, mdt):
+                      key = (repo_full, pd["number"])
+                      if key in seen_ids:
+                          return False
+                      seen_ids.add(key)
+                      pr_list.append({
+                          "repo_name":         repo_entry["name"],
+                          "repo_full_name":    repo_full,
+                          "feature_map_local": repo_entry.get("feature_map_local", ""),
+                          "number":            pd["number"],
+                          "title":             pd["title"],
+                          "html_url":          pd["url"],
+                          "head_sha":          pd.get("headRefOid", ""),
+                          "state":             "closed",
+                          "merged_at":         mdt.isoformat(),
+                          "created_at":        pd.get("createdAt", ""),
+                      })
+                      return True
+
+                  s_cmd = [
+                      "gh", "pr", "list", "--repo", repo_full,
+                      "--search", f"is:merged {merged_q}",
+                      "--limit", "500",
+                      "--json", "number,title,mergedAt,createdAt,url,headRefOid",
+                  ]
+                  sr = subprocess.run(s_cmd, capture_output=True, text=True)
+                  s_count = 0
+                  if sr.returncode == 0 and sr.stdout.strip():
+                      for pd in json.loads(sr.stdout):
+                          mat = pd.get("mergedAt", "")
+                          if not mat:
+                              continue
+                          mdt = datetime.fromisoformat(mat.replace("Z", "+00:00"))
+                          if mdt < scan_from:
+                              continue
+                          if date_to and mdt > date_to:
+                              continue
+                          if _add(pd, mdt):
+                              s_count += 1
+                              print(f"  [search] #{pd['number']} merged=[{mdt.date()}]: {pd['title'][:50]}",
+                                    file=sys.stderr)
+                  else:
+                      print(f"  [search] failed/empty — {sr.stderr[:200]}", file=sys.stderr)
+
+                  c_cmd = [
+                      "gh", "pr", "list", "--repo", repo_full,
+                      "--state", "merged",
+                      "--limit", "1000",
+                      "--json", "number,title,mergedAt,createdAt,url,headRefOid",
+                  ]
+                  cr = subprocess.run(c_cmd, capture_output=True, text=True)
+                  p_count = 0
+                  if cr.returncode == 0 and cr.stdout.strip():
+                      for pd in json.loads(cr.stdout):
+                          mat = pd.get("mergedAt", "")
+                          if not mat:
+                              continue
+                          mdt = datetime.fromisoformat(mat.replace("Z", "+00:00"))
+                          if mdt < scan_from:
+                              continue
+                          if date_to and mdt > date_to:
+                              continue
+                          if _add(pd, mdt):
+                              p_count += 1
+                              print(f"  [supp]   #{pd['number']} merged=[{mdt.date()}]: {pd['title'][:50]}",
+                                    file=sys.stderr)
+                  else:
+                      print(f"  [supp]   failed — {cr.stderr[:200]}", file=sys.stderr)
+                  print(f"  [total]  {repo_full}: {s_count + p_count} PR(s) "
+                        f"(search+{s_count} / supp+{p_count})", file=sys.stderr)
               else:
-                  api_state = "closed" if state_filter == "merged" else (
-                              state_filter if state_filter != "all" else "all")
+                  api_state = state_filter if state_filter != "all" else "all"
+                  pr_lookback = timedelta(days=90)
                   for pr in gh_repo.get_pulls(state=api_state, sort="created", direction="desc"):
                       created = pr.created_at
-                      if date_from and created < date_from:
+                      if date_from and created < (date_from - pr_lookback):
                           break
                       if date_to and created > date_to:
                           continue
-                      if state_filter == "merged" and not pr.merged_at:
+                      if date_from and created < date_from:
                           continue
                       add_pr(pr, repo_entry)
                       print(f"  PR #{pr.number} [{created.date()}]: {pr.title[:55]}", file=sys.stderr)
@@ -474,6 +565,7 @@ jobs:
         if: always()
         env:
           PR_NUMBERS: ${{ inputs.pr_numbers }}
+          HOURS_BACK: ${{ inputs.hours_back }}
           DATE_FROM:  ${{ inputs.date_from }}
           DATE_TO:    ${{ inputs.date_to }}
           STATE:      ${{ inputs.state }}
@@ -488,6 +580,7 @@ jobs:
           from pathlib import Path
 
           pr_numbers = os.environ.get("PR_NUMBERS", "")
+          hours_back = os.environ.get("HOURS_BACK", "")
           date_from  = os.environ.get("DATE_FROM", "")
           date_to    = os.environ.get("DATE_TO", "")
           state      = os.environ.get("STATE", "merged")
@@ -499,6 +592,8 @@ jobs:
 
           if pr_numbers:
               mode = f"Explicit PR numbers: `{pr_numbers}`"
+          elif hours_back:
+              mode = f"Last `{hours_back}` hours (rolling UTC window) · state=`merged`"
           else:
               mode = f"Date range: `{date_from or '*'}` → `{date_to or 'now'}` · state=`{state}`"
 
