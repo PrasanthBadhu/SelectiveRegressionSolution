@@ -107,7 +107,7 @@ jobs:
         run: |
           python3 - <<'EOF'
           import os, json, sys, yaml
-          from datetime import datetime, timezone
+          from datetime import datetime, timezone, timedelta
           from pathlib import Path
           from github import Github, GithubException
 
@@ -179,29 +179,32 @@ jobs:
               else:
                   api_state = "closed" if state_filter == "merged" else (
                               state_filter if state_filter != "all" else "all")
-                  # For merged: sort by updated so PRs created before the window but
-                  # merged within it (lower PR numbers) appear near the top.
-                  # For other states: sort by created (original behaviour).
-                  iter_sort = "updated" if state_filter == "merged" else "created"
-                  for pr in gh_repo.get_pulls(state=api_state, sort=iter_sort, direction="desc"):
+                  # Sort by created (stable, matches PR-number order).
+                  # Use a 90-day lookback buffer so PRs created long before the
+                  # window but merged within it (long-lived branches, lower PR
+                  # numbers) are not missed.  For the merged state, filtering is
+                  # done on merged_at, NOT created_at.
+                  pr_lookback = timedelta(days=90)
+                  for pr in gh_repo.get_pulls(state=api_state, sort="created", direction="desc"):
+                      created = pr.created_at
+                      # Safe break: nothing created more than 90 days before the
+                      # window start can have been merged inside the window.
+                      if date_from and created < (date_from - pr_lookback):
+                          break
                       if state_filter == "merged":
-                          # Safe termination: a PR not updated since before date_from
-                          # cannot have been merged within the window.
-                          if pr.updated_at and date_from and pr.updated_at < date_from:
-                              break
                           if not pr.merged_at:
                               continue  # closed without being merged
                           if date_from and pr.merged_at < date_from:
-                              continue  # merged before window but recently updated — skip, keep scanning
+                              continue  # merged before window
                           if date_to and pr.merged_at > date_to:
                               continue  # merged after window
                       else:
-                          if date_from and pr.created_at < date_from:
-                              break
-                          if date_to and pr.created_at > date_to:
-                              continue
+                          if date_to and created > date_to:
+                              continue  # created after window
+                          if date_from and created < date_from:
+                              continue  # created before window
                       add_pr(pr, repo_entry)
-                      ts = (pr.merged_at or pr.created_at).date()
+                      ts = (pr.merged_at or created).date()
                       print(f"  PR #{pr.number} [{ts}]: {pr.title[:55]}", file=sys.stderr)
 
           print(f"\nTotal PRs to analyze: {len(pr_list)} "
