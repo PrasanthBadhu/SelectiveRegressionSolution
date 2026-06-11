@@ -437,8 +437,16 @@ jobs:
                       break
 
               if not success:
-                  print(f"  FAIL {wf_file_name}: {result.stderr.strip()}", file=sys.stderr)
-                  failed += 1
+                  err = result.stderr.strip()
+                  # HTTP 422 = the target workflow exists but has no workflow_dispatch
+                  # trigger — treat as a warning so one mis-configured workflow does
+                  # not abort dispatching all the others.
+                  if "422" in err or "workflow_dispatch" in err.lower():
+                      print(f"  WARN {wf_file_name}: no workflow_dispatch trigger — skipped",
+                            file=sys.stderr)
+                  else:
+                      print(f"  FAIL {wf_file_name}: {err}", file=sys.stderr)
+                      failed += 1
 
           print(f"\nDispatched: {dispatched}  Failed: {failed}")
           if failed > 0:

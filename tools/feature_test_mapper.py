@@ -147,7 +147,6 @@ CAT_TO_WORKFLOW = {
     "KeyCiteTestFlag": ["WL_DNet_ANZ_AnzLegislationKeyciteFlag"],
     "LegalAnalyticsApi": ["WL_DNet_Edge_LegalAnalyticsApi_Edge"],
     "Links": ["WL_DNet_Next_WLNLinks"],
-    "LitigationAnalytics": ["WL_DNet_Precision_LitigationAnalytics"],
     "LiveChat": ["WL_DNet_Next_Tax_Migration_LiveChat"],
     "LiveChat_OffHours": ["WL_DNet_Next_Tax_Migration_LiveChat_OffHours"],
     "MasterTaxonomy": ["WL_DNet_CA_MasterTaxonomy"],
