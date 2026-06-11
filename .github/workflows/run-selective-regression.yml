@@ -179,16 +179,30 @@ jobs:
               else:
                   api_state = "closed" if state_filter == "merged" else (
                               state_filter if state_filter != "all" else "all")
-                  for pr in gh_repo.get_pulls(state=api_state, sort="created", direction="desc"):
-                      created = pr.created_at
-                      if date_from and created < date_from:
-                          break
-                      if date_to and created > date_to:
-                          continue
-                      if state_filter == "merged" and not pr.merged_at:
-                          continue
+                  # For merged: sort by updated so PRs created before the window but
+                  # merged within it (lower PR numbers) appear near the top.
+                  # For other states: sort by created (original behaviour).
+                  iter_sort = "updated" if state_filter == "merged" else "created"
+                  for pr in gh_repo.get_pulls(state=api_state, sort=iter_sort, direction="desc"):
+                      if state_filter == "merged":
+                          # Safe termination: a PR not updated since before date_from
+                          # cannot have been merged within the window.
+                          if pr.updated_at and date_from and pr.updated_at < date_from:
+                              break
+                          if not pr.merged_at:
+                              continue  # closed without being merged
+                          if date_from and pr.merged_at < date_from:
+                              continue  # merged before window but recently updated — skip, keep scanning
+                          if date_to and pr.merged_at > date_to:
+                              continue  # merged after window
+                      else:
+                          if date_from and pr.created_at < date_from:
+                              break
+                          if date_to and pr.created_at > date_to:
+                              continue
                       add_pr(pr, repo_entry)
-                      print(f"  PR #{pr.number} [{created.date()}]: {pr.title[:55]}", file=sys.stderr)
+                      ts = (pr.merged_at or pr.created_at).date()
+                      print(f"  PR #{pr.number} [{ts}]: {pr.title[:55]}", file=sys.stderr)
 
           print(f"\nTotal PRs to analyze: {len(pr_list)} "
                 f"across {len(enabled_repos)} repo(s)", file=sys.stderr)
