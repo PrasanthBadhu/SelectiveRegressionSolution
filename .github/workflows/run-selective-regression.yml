@@ -185,6 +185,7 @@ jobs:
                       query = (f"repo:{repo_full} is:pr is:merged "
                                f"merged:{date_from_raw}..{range_end}")
                       print(f"  Search query: {query}", file=sys.stderr)
+                      _before_search = len(pr_list)
                       try:
                           results = g.search_issues(query, sort="created", order="desc")
                           for issue in results:
@@ -200,29 +201,48 @@ jobs:
                       except GithubException as e:
                           print(f"  WARNING: search failed for {repo_full}: {e}",
                                 file=sys.stderr)
+                      _search_new = len(pr_list) - _before_search
+                      print(f"  [source] search added {_search_new} new PR(s)", file=sys.stderr)
 
-                      # SUPPLEMENT: sort closed PRs by updated_at desc and break
-                      # only when updated_at < date_from.
-                      # Key invariant: merged_at <= updated_at for every PR.
-                      # Therefore when updated_at < date_from, merged_at must
-                      # also be < date_from — nothing from that point on can be
-                      # in the window.  This stop condition does NOT depend on
-                      # created_at at all, so PRs opened weeks, months, or years
-                      # ago but merged within the window are always included.
+                      # SUPPLEMENT: sort closed PRs by updated_at desc.
+                      # Break floor = date_from - 7 days (conservative safety margin).
+                      # Any PR merged within [date_from, date_to] has
+                      # updated_at >= merged_at >= date_from, so date_from - 7 days
+                      # is a safe floor that never fires before we've seen all
+                      # in-window PRs regardless of GitHub sort ties or tiny
+                      # clock skews.
+                      _scan_floor = date_from - timedelta(days=7)
+                      _scan_checked = 0
+                      _scan_new = 0
                       for pr in gh_repo.get_pulls(state="closed", sort="updated",
                                                   direction="desc"):
-                          if pr.updated_at and date_from and pr.updated_at < date_from:
-                              break   # merged_at <= updated_at < date_from: done
+                          _scan_checked += 1
+                          if pr.updated_at and pr.updated_at < _scan_floor:
+                              print(f"  [break]  after {_scan_checked} PRs; "
+                                    f"PR #{pr.number} updated={pr.updated_at.date()} "
+                                    f"< floor={_scan_floor.date()}",
+                                    file=sys.stderr)
+                              break
                           if pr.merged_at is None:
                               continue  # closed without merge
                           if date_to   and pr.merged_at > date_to:
                               continue  # merged after window
                           if date_from and pr.merged_at < date_from:
-                              continue  # merged before window (updated later by comment)
+                              continue  # merged before window (updated later)
+                          _prev = len(pr_list)
                           add_pr(pr, repo_entry)
-                          ts = pr.merged_at.date()
-                          print(f"  [scan]   PR #{pr.number} merged=[{ts}]: {pr.title[:48]}",
-                                file=sys.stderr)
+                          if len(pr_list) > _prev:
+                              _scan_new += 1
+                              ts = pr.merged_at.date()
+                              print(f"  [scan]   PR #{pr.number} merged=[{ts}]: {pr.title[:48]}",
+                                    file=sys.stderr)
+                      _repo_total = len([p for p in pr_list
+                                         if p["repo_full_name"] == repo_full])
+                      print(f"  [total]  {repo_full}: {_repo_total} PR(s) "
+                            f"(search+{_search_new}, scan+{_scan_new}, "
+                            f"scanned={_scan_checked})", file=sys.stderr)
+                      print(f"::notice::{repo_full}: {_repo_total} merged PR(s) "
+                            f"(search+{_search_new} / scan+{_scan_new})")
                   else:
                       # Non-merged states: paginate with 90-day lookback on created_at.
                       api_state = (state_filter if state_filter != "all" else "all")
