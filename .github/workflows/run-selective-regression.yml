@@ -177,35 +177,47 @@ jobs:
                       except GithubException as e:
                           print(f"  PR #{num_str} not in {repo_full}: {e}", file=sys.stderr)
               else:
-                  api_state = "closed" if state_filter == "merged" else (
-                              state_filter if state_filter != "all" else "all")
-                  # Sort by created (stable, matches PR-number order).
-                  # Use a 90-day lookback buffer so PRs created long before the
-                  # window but merged within it (long-lived branches, lower PR
-                  # numbers) are not missed.  For the merged state, filtering is
-                  # done on merged_at, NOT created_at.
-                  pr_lookback = timedelta(days=90)
-                  for pr in gh_repo.get_pulls(state=api_state, sort="created", direction="desc"):
-                      created = pr.created_at
-                      # Safe break: nothing created more than 90 days before the
-                      # window start can have been merged inside the window.
-                      if date_from and created < (date_from - pr_lookback):
-                          break
-                      if state_filter == "merged":
-                          if not pr.merged_at:
-                              continue  # closed without being merged
-                          if date_from and pr.merged_at < date_from:
-                              continue  # merged before window
-                          if date_to and pr.merged_at > date_to:
-                              continue  # merged after window
-                      else:
+                  if state_filter == "merged" and date_from_raw:
+                      # Use the GitHub Search API with the merged: qualifier.
+                      # This matches merged_at directly — no sorting/pagination
+                      # workarounds needed. Long-lived PRs (lower numbers, created
+                      # weeks before the window but merged within it) are returned
+                      # just as any other PR.
+                      range_end = date_to_raw if date_to_raw else date_from_raw
+                      query = (f"repo:{repo_full} is:pr is:merged "
+                               f"merged:{date_from_raw}..{range_end}")
+                      print(f"  Search query: {query}", file=sys.stderr)
+                      try:
+                          results = g.search_issues(query, sort="created", order="desc")
+                          for issue in results:
+                              try:
+                                  pr = gh_repo.get_pull(issue.number)
+                                  add_pr(pr, repo_entry)
+                                  ts = pr.merged_at.date() if pr.merged_at else "?"
+                                  print(f"  PR #{pr.number} [{ts}]: {pr.title[:55]}",
+                                        file=sys.stderr)
+                              except GithubException as e:
+                                  print(f"  WARNING: could not fetch PR #{issue.number}: {e}",
+                                        file=sys.stderr)
+                      except GithubException as e:
+                          print(f"  WARNING: search failed for {repo_full}: {e}",
+                                file=sys.stderr)
+                  else:
+                      # Non-merged states: paginate with 90-day lookback on created_at.
+                      api_state = (state_filter if state_filter != "all" else "all")
+                      pr_lookback = timedelta(days=90)
+                      for pr in gh_repo.get_pulls(state=api_state, sort="created",
+                                                  direction="desc"):
+                          created = pr.created_at
+                          if date_from and created < (date_from - pr_lookback):
+                              break
                           if date_to and created > date_to:
-                              continue  # created after window
+                              continue
                           if date_from and created < date_from:
-                              continue  # created before window
-                      add_pr(pr, repo_entry)
-                      ts = (pr.merged_at or created).date()
-                      print(f"  PR #{pr.number} [{ts}]: {pr.title[:55]}", file=sys.stderr)
+                              continue
+                          add_pr(pr, repo_entry)
+                          print(f"  PR #{pr.number} [{created.date()}]: {pr.title[:55]}",
+                                file=sys.stderr)
 
           print(f"\nTotal PRs to analyze: {len(pr_list)} "
                 f"across {len(enabled_repos)} repo(s)", file=sys.stderr)
