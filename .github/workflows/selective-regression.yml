@@ -30,6 +30,11 @@ name: Selective Regression
 on:
   workflow_dispatch:
     inputs:
+      dry_run:
+        description: "Dry run (analyse but do not trigger regression)"
+        required: false
+        type: boolean
+        default: false
       pr_numbers:
         description: "PR numbers (e.g. 2460,2461)"
         required: false
@@ -69,11 +74,6 @@ on:
           - Demo
           - QED
           - QEDAWS
-      dry_run:
-        description: "Dry run (analyse but do not trigger regression)"
-        required: false
-        type: boolean
-        default: false
 
 permissions:
   contents: read
