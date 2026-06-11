@@ -319,12 +319,18 @@ def main() -> None:
             break
         process_pr(pr)
 
-    # Also scan PRs merged in the last 24 hours (post-merge safety net)
+    # Also scan PRs merged in the last 24 hours (post-merge safety net).
+    # Stop pagination only when updated_at falls outside the lookback window —
+    # NOT when merged_at is old, because a PR merged days ago can still appear
+    # near the top of the list if someone recently commented on it, and using
+    # break on merged_at would cut the loop before reaching genuinely recent PRs.
     for pr in repo.get_pulls(state="closed", sort="updated", direction="desc"):
+        if pr.updated_at and pr.updated_at < cutoff_lookback:
+            break
         if pr.merged_at is None:
             continue
         if pr.merged_at < cutoff_merged:
-            break
+            continue  # old merge but recently updated (e.g. comment) — skip, keep scanning
         print(f"  [MERGED] PR #{pr.number}: {pr.title[:70]}", file=sys.stderr)
         process_pr(pr)
 
