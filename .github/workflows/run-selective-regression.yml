@@ -201,25 +201,24 @@ jobs:
                           print(f"  WARNING: search failed for {repo_full}: {e}",
                                 file=sys.stderr)
 
-                      # SUPPLEMENT: paginate closed PRs and filter by merged_at.
-                      # Catches PRs the search index may have missed (index lag,
-                      # token scope gap on private-repo search, etc.).
-                      # Critically: the filter here uses merged_at — NOT created_at —
-                      # so PRs opened weeks before the window but merged within it
-                      # are included.  The break guard uses created_at with a 90-day
-                      # buffer only to stop scanning once we're past the plausible
-                      # creation window; it never excludes a PR from the results.
-                      pr_lookback = timedelta(days=180)
-                      for pr in gh_repo.get_pulls(state="closed", sort="created",
+                      # SUPPLEMENT: sort closed PRs by updated_at desc and break
+                      # only when updated_at < date_from.
+                      # Key invariant: merged_at <= updated_at for every PR.
+                      # Therefore when updated_at < date_from, merged_at must
+                      # also be < date_from — nothing from that point on can be
+                      # in the window.  This stop condition does NOT depend on
+                      # created_at at all, so PRs opened weeks, months, or years
+                      # ago but merged within the window are always included.
+                      for pr in gh_repo.get_pulls(state="closed", sort="updated",
                                                   direction="desc"):
-                          if date_from and pr.created_at < (date_from - pr_lookback):
-                              break   # nothing older can have merged_at in window
+                          if pr.updated_at and date_from and pr.updated_at < date_from:
+                              break   # merged_at <= updated_at < date_from: done
                           if pr.merged_at is None:
                               continue  # closed without merge
                           if date_to   and pr.merged_at > date_to:
                               continue  # merged after window
                           if date_from and pr.merged_at < date_from:
-                              continue  # merged before window
+                              continue  # merged before window (updated later by comment)
                           add_pr(pr, repo_entry)
                           ts = pr.merged_at.date()
                           print(f"  [scan]   PR #{pr.number} merged=[{ts}]: {pr.title[:48]}",
