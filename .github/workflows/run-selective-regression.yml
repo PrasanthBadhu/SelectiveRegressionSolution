@@ -106,7 +106,7 @@ jobs:
           STATE:        ${{ inputs.state }}
         run: |
           python3 - <<'EOF'
-          import os, json, sys, yaml
+          import os, json, sys, yaml, subprocess
           from datetime import datetime, timezone, timedelta
           from pathlib import Path
           from github import Github, GithubException
@@ -178,71 +178,95 @@ jobs:
                           print(f"  PR #{num_str} not in {repo_full}: {e}", file=sys.stderr)
               else:
                   if state_filter == "merged" and date_from_raw:
-                      # PRIMARY: GitHub Search API — merged: qualifier queries
-                      # merged_at directly, so long-lived PRs (created weeks before
-                      # the window but merged within it) are included correctly.
                       range_end = date_to_raw if date_to_raw else date_from_raw
-                      query = (f"repo:{repo_full} is:pr is:merged "
-                               f"merged:{date_from_raw}..{range_end}")
-                      print(f"  Search query: {query}", file=sys.stderr)
-                      _before_search = len(pr_list)
-                      try:
-                          results = g.search_issues(query, sort="created", order="desc")
-                          for issue in results:
-                              try:
-                                  pr = gh_repo.get_pull(issue.number)
-                                  add_pr(pr, repo_entry)
-                                  ts = pr.merged_at.date() if pr.merged_at else "?"
-                                  print(f"  [search] PR #{pr.number} [{ts}]: {pr.title[:50]}",
-                                        file=sys.stderr)
-                              except GithubException as e:
-                                  print(f"  WARNING: could not fetch PR #{issue.number}: {e}",
-                                        file=sys.stderr)
-                      except GithubException as e:
-                          print(f"  WARNING: search failed for {repo_full}: {e}",
-                                file=sys.stderr)
-                      _search_new = len(pr_list) - _before_search
-                      print(f"  [source] search added {_search_new} new PR(s)", file=sys.stderr)
 
-                      # SUPPLEMENT: sort closed PRs by updated_at desc.
-                      # Break floor = date_from - 7 days (conservative safety margin).
-                      # Any PR merged within [date_from, date_to] has
-                      # updated_at >= merged_at >= date_from, so date_from - 7 days
-                      # is a safe floor that never fires before we've seen all
-                      # in-window PRs regardless of GitHub sort ties or tiny
-                      # clock skews.
-                      _scan_floor = date_from - timedelta(days=7)
-                      _scan_checked = 0
-                      _scan_new = 0
-                      for pr in gh_repo.get_pulls(state="closed", sort="updated",
-                                                  direction="desc"):
-                          _scan_checked += 1
-                          if pr.updated_at and pr.updated_at < _scan_floor:
-                              print(f"  [break]  after {_scan_checked} PRs; "
-                                    f"PR #{pr.number} updated={pr.updated_at.date()} "
-                                    f"< floor={_scan_floor.date()}",
-                                    file=sys.stderr)
-                              break
-                          if pr.merged_at is None:
-                              continue  # closed without merge
-                          if date_to   and pr.merged_at > date_to:
-                              continue  # merged after window
-                          if date_from and pr.merged_at < date_from:
-                              continue  # merged before window (updated later)
-                          _prev = len(pr_list)
-                          add_pr(pr, repo_entry)
-                          if len(pr_list) > _prev:
-                              _scan_new += 1
-                              ts = pr.merged_at.date()
-                              print(f"  [scan]   PR #{pr.number} merged=[{ts}]: {pr.title[:48]}",
-                                    file=sys.stderr)
-                      _repo_total = len([p for p in pr_list
-                                         if p["repo_full_name"] == repo_full])
+                      def _add_pr_data(pr_data, mdt):
+                          key = (repo_full, pr_data["number"])
+                          if key in seen_ids:
+                              return False
+                          seen_ids.add(key)
+                          pr_list.append({
+                              "repo_name":         repo_entry["name"],
+                              "repo_full_name":    repo_full,
+                              "feature_map_local": repo_entry.get("feature_map_local", ""),
+                              "number":            pr_data["number"],
+                              "title":             pr_data["title"],
+                              "html_url":          pr_data["url"],
+                              "head_sha":          pr_data.get("headRefOid", ""),
+                              "state":             "closed",
+                              "merged_at":         mdt.isoformat(),
+                              "created_at":        pr_data.get("createdAt", ""),
+                          })
+                          return True
+
+                      # PRIMARY: gh pr list --search uses GitHub Search API with
+                      # the merged: qualifier which queries merged_at directly —
+                      # finds PRs merged in the window regardless of created_at.
+                      search_count = 0
+                      s_cmd = [
+                          "gh", "pr", "list", "--repo", repo_full,
+                          "--state", "merged",
+                          "--search", f"merged:{date_from_raw}..{range_end}",
+                          "--limit", "500",
+                          "--json", "number,title,mergedAt,createdAt,url,headRefOid"
+                      ]
+                      print(f"  [search] merged:{date_from_raw}..{range_end}", file=sys.stderr)
+                      sr = subprocess.run(s_cmd, capture_output=True, text=True)
+                      if sr.returncode == 0 and sr.stdout.strip():
+                          for pd in json.loads(sr.stdout):
+                              mat = pd.get("mergedAt", "")
+                              if not mat:
+                                  continue
+                              mdt = datetime.fromisoformat(mat.replace("Z", "+00:00"))
+                              if date_from and mdt < date_from:
+                                  continue
+                              if date_to   and mdt > date_to:
+                                  continue
+                              if _add_pr_data(pd, mdt):
+                                  search_count += 1
+                                  print(f"  [search] #{pd['number']} [{mdt.date()}]: {pd['title'][:55]}",
+                                        file=sys.stderr)
+                      else:
+                          print(f"  [search] failed/empty — {sr.stderr[:200]}", file=sys.stderr)
+                      print(f"  [source] search added {search_count}", file=sys.stderr)
+
+                      # SUPPLEMENT: Pulls API (no Search scope needed).
+                      # Fetch 1000 most-recently-created merged PRs and filter
+                      # by merged_at in Python — catches any that the Search API
+                      # missed.  1000 comfortably covers weeks of normal activity.
+                      supp_count = 0
+                      c_cmd = [
+                          "gh", "pr", "list", "--repo", repo_full,
+                          "--state", "merged",
+                          "--limit", "1000",
+                          "--json", "number,title,mergedAt,createdAt,url,headRefOid"
+                      ]
+                      print(f"  [supp]   fetching up to 1000 merged PRs via Pulls API...",
+                            file=sys.stderr)
+                      cr = subprocess.run(c_cmd, capture_output=True, text=True)
+                      if cr.returncode == 0 and cr.stdout.strip():
+                          for pd in json.loads(cr.stdout):
+                              mat = pd.get("mergedAt", "")
+                              if not mat:
+                                  continue
+                              mdt = datetime.fromisoformat(mat.replace("Z", "+00:00"))
+                              if date_from and mdt < date_from:
+                                  continue
+                              if date_to   and mdt > date_to:
+                                  continue
+                              if _add_pr_data(pd, mdt):
+                                  supp_count += 1
+                                  print(f"  [supp]   #{pd['number']} [{mdt.date()}]: {pd['title'][:55]}",
+                                        file=sys.stderr)
+                      else:
+                          print(f"  [supp]   failed — {cr.stderr[:200]}", file=sys.stderr)
+                      print(f"  [source] supplement added {supp_count}", file=sys.stderr)
+
+                      _repo_total = search_count + supp_count
                       print(f"  [total]  {repo_full}: {_repo_total} PR(s) "
-                            f"(search+{_search_new}, scan+{_scan_new}, "
-                            f"scanned={_scan_checked})", file=sys.stderr)
+                            f"(search+{search_count} / supp+{supp_count})", file=sys.stderr)
                       print(f"::notice::{repo_full}: {_repo_total} merged PR(s) "
-                            f"(search+{_search_new} / scan+{_scan_new})")
+                            f"(search+{search_count} / supp+{supp_count})")
                   else:
                       # Non-merged states: paginate with 90-day lookback on created_at.
                       api_state = (state_filter if state_filter != "all" else "all")
