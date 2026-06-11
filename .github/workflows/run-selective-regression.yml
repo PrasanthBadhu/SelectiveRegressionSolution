@@ -36,6 +36,11 @@ on:
         required: false
         type: string
         default: ""
+      hours_back:
+        description: "Hours back to scan for merged PRs (e.g. 24, 48, 72). Overrides date_from/date_to when set."
+        required: false
+        type: string
+        default: ""
       date_from:
         description: "Date range start — PRs created on/after (YYYY-MM-DD). Ignored if PR number(s) given."
         required: false
@@ -101,6 +106,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.COBALT_READ_TOKEN }}
           PR_NUMBERS:   ${{ inputs.pr_numbers }}
+          HOURS_BACK:   ${{ inputs.hours_back }}
           DATE_FROM:    ${{ inputs.date_from }}
           DATE_TO:      ${{ inputs.date_to }}
           STATE:        ${{ inputs.state }}
@@ -120,18 +126,30 @@ jobs:
           enabled_repos = [r for r in registry.get("repos", []) if r.get("enabled")]
 
           pr_numbers_raw = os.environ.get("PR_NUMBERS", "").strip()
+          hours_back_raw = os.environ.get("HOURS_BACK", "").strip()
           date_from_raw  = os.environ.get("DATE_FROM", "").strip()
           date_to_raw    = os.environ.get("DATE_TO", "").strip()
           state_filter   = os.environ.get("STATE", "merged").strip().lower()
 
-          date_from = None
-          date_to   = None
+          date_from        = None
+          date_to          = None
+          using_hours_back = False
           if not pr_numbers_raw:
-              if date_from_raw:
-                  date_from = datetime.strptime(date_from_raw, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-              if date_to_raw:
-                  date_to = datetime.strptime(date_to_raw, "%Y-%m-%d").replace(
-                      hour=23, minute=59, second=59, tzinfo=timezone.utc)
+              if hours_back_raw and hours_back_raw.isdigit() and int(hours_back_raw) > 0:
+                  _h = int(hours_back_raw)
+                  date_to          = datetime.now(timezone.utc)
+                  date_from        = date_to - timedelta(hours=_h)
+                  date_from_raw    = date_from.strftime("%Y-%m-%d")
+                  date_to_raw      = date_to.strftime("%Y-%m-%d")
+                  using_hours_back = True
+                  print(f"  hours_back={_h}: {date_from.isoformat()} → {date_to.isoformat()}",
+                        file=sys.stderr)
+              else:
+                  if date_from_raw:
+                      date_from = datetime.strptime(date_from_raw, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                  if date_to_raw:
+                      date_to = datetime.strptime(date_to_raw, "%Y-%m-%d").replace(
+                          hour=23, minute=59, second=59, tzinfo=timezone.utc)
 
           g        = Github(token)
           pr_list  = []
@@ -180,18 +198,21 @@ jobs:
                   if state_filter == "merged" and date_from_raw:
                       range_end = date_to_raw if date_to_raw else date_from_raw
 
-                      # GitHub stores merged_at in UTC, but users enter dates in
-                      # their local timezone.  For IST (UTC+5:30), "June 10"
-                      # starts at June 9T18:30Z — PRs merged before June 10T00:00Z
-                      # UTC are still "June 10" locally and must be included.
-                      # Extending the scan start 1 day earlier covers all UTC
-                      # offsets up to UTC+24 with no false exclusions.
-                      _scan_from_dt  = (datetime.strptime(date_from_raw, "%Y-%m-%d")
-                                        - timedelta(days=1))
-                      scan_from_raw  = _scan_from_dt.strftime("%Y-%m-%d")
-                      scan_from      = _scan_from_dt.replace(tzinfo=timezone.utc)
+                      if using_hours_back:
+                          # hours_back gives UTC-precise datetimes — use as-is,
+                          # no timezone offset extension needed.
+                          scan_from     = date_from
+                          scan_from_raw = date_from.strftime("%Y-%m-%d")
+                      else:
+                          # User entered a calendar date in their local timezone.
+                          # Extend 1 day earlier so "June 10 IST" PRs (which have
+                          # merged_at on June 9 UTC) are not excluded.
+                          _scan_from_dt = (datetime.strptime(date_from_raw, "%Y-%m-%d")
+                                           - timedelta(days=1))
+                          scan_from_raw = _scan_from_dt.strftime("%Y-%m-%d")
+                          scan_from     = _scan_from_dt.replace(tzinfo=timezone.utc)
                       print(f"  Scan window: {scan_from_raw} -> {range_end} "
-                            f"(user date_from={date_from_raw}, -1d for TZ)",
+                            f"(hours_back={using_hours_back})",
                             file=sys.stderr)
 
                       def _add_pr_data(pr_data, mdt):

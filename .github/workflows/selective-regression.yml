@@ -35,6 +35,11 @@ on:
         required: false
         type: string
         default: ""
+      hours_back:
+        description: "Hours back to scan for merged PRs (e.g. 24, 48, 72). Overrides date_from/date_to when set."
+        required: false
+        type: string
+        default: ""
       date_from:
         description: "Date range start — PRs created on/after (YYYY-MM-DD). Ignored if PR number(s) given."
         required: false
@@ -105,13 +110,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.COBALT_READ_TOKEN }}
           PR_NUMBERS:   ${{ inputs.pr_numbers }}
+          HOURS_BACK:   ${{ inputs.hours_back }}
           DATE_FROM:    ${{ inputs.date_from }}
           DATE_TO:      ${{ inputs.date_to }}
           STATE:        ${{ inputs.state }}
         run: |
           python3 - <<'EOF'
           import os, json, sys, yaml
-          from datetime import datetime, timezone
+          from datetime import datetime, timezone, timedelta
           from pathlib import Path
           from github import Github, GithubException
 
@@ -124,6 +130,7 @@ jobs:
           enabled_repos = [r for r in registry.get("repos", []) if r.get("enabled")]
 
           pr_numbers_raw = os.environ.get("PR_NUMBERS", "").strip()
+          hours_back_raw = os.environ.get("HOURS_BACK", "").strip()
           date_from_raw  = os.environ.get("DATE_FROM", "").strip()
           date_to_raw    = os.environ.get("DATE_TO", "").strip()
           state_filter   = os.environ.get("STATE", "merged").strip().lower()
@@ -131,11 +138,20 @@ jobs:
           date_from = None
           date_to   = None
           if not pr_numbers_raw:
-              if date_from_raw:
-                  date_from = datetime.strptime(date_from_raw, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-              if date_to_raw:
-                  date_to = datetime.strptime(date_to_raw, "%Y-%m-%d").replace(
-                      hour=23, minute=59, second=59, tzinfo=timezone.utc)
+              if hours_back_raw and hours_back_raw.isdigit() and int(hours_back_raw) > 0:
+                  _h = int(hours_back_raw)
+                  date_to   = datetime.now(timezone.utc)
+                  date_from = date_to - timedelta(hours=_h)
+                  date_from_raw = date_from.strftime("%Y-%m-%d")
+                  date_to_raw   = date_to.strftime("%Y-%m-%d")
+                  print(f"  hours_back={_h}: {date_from.isoformat()} → {date_to.isoformat()}",
+                        file=sys.stderr)
+              else:
+                  if date_from_raw:
+                      date_from = datetime.strptime(date_from_raw, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                  if date_to_raw:
+                      date_to = datetime.strptime(date_to_raw, "%Y-%m-%d").replace(
+                          hour=23, minute=59, second=59, tzinfo=timezone.utc)
 
           g        = Github(token)
           pr_list  = []
