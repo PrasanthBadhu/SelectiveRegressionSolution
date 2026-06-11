@@ -237,15 +237,28 @@ jobs:
                       # PRIMARY: gh pr list --search uses GitHub Search API with
                       # the merged: qualifier which queries merged_at directly —
                       # finds PRs merged in the window regardless of created_at.
+                      #
+                      # Use ISO datetimes for hours_back (avoids date-boundary
+                      # ambiguity: "merged:2026-06-11" = midnight UTC, so a PR
+                      # merged at 02:00 UTC June 11 would be missed).
+                      # Drop --state merged: mixing it with --search switches
+                      # between GraphQL and REST APIs and causes inconsistent
+                      # results; use is:merged inside the --search string instead.
+                      if using_hours_back:
+                          _sq_from = date_from.strftime("%Y-%m-%dT%H:%M:%SZ")
+                          _sq_to   = date_to.strftime("%Y-%m-%dT%H:%M:%SZ")
+                          merged_q = f"merged:{_sq_from}..{_sq_to}"
+                      else:
+                          merged_q = f"merged:{scan_from_raw}..{range_end}"
+
                       search_count = 0
                       s_cmd = [
                           "gh", "pr", "list", "--repo", repo_full,
-                          "--state", "merged",
-                          "--search", f"merged:{scan_from_raw}..{range_end}",
+                          "--search", f"is:merged {merged_q}",
                           "--limit", "500",
                           "--json", "number,title,mergedAt,createdAt,url,headRefOid"
                       ]
-                      print(f"  [search] merged:{scan_from_raw}..{range_end}", file=sys.stderr)
+                      print(f"  [search] {merged_q}", file=sys.stderr)
                       sr = subprocess.run(s_cmd, capture_output=True, text=True)
                       if sr.returncode == 0 and sr.stdout.strip():
                           for pd in json.loads(sr.stdout):
@@ -591,6 +604,7 @@ jobs:
         if: always()
         env:
           PR_NUMBERS: ${{ inputs.pr_numbers }}
+          HOURS_BACK: ${{ inputs.hours_back }}
           DATE_FROM:  ${{ inputs.date_from }}
           DATE_TO:    ${{ inputs.date_to }}
           STATE:      ${{ inputs.state }}
@@ -604,6 +618,7 @@ jobs:
           from pathlib import Path
 
           pr_numbers = os.environ.get("PR_NUMBERS", "")
+          hours_back = os.environ.get("HOURS_BACK", "")
           date_from  = os.environ.get("DATE_FROM", "")
           date_to    = os.environ.get("DATE_TO", "")
           state      = os.environ.get("STATE", "merged")
@@ -614,6 +629,8 @@ jobs:
 
           if pr_numbers:
               mode = f"Explicit PR numbers: `{pr_numbers}`"
+          elif hours_back:
+              mode = f"Last `{hours_back}` hours (rolling UTC window) · state=`merged`"
           else:
               mode = f"Date range: `{date_from or '*'}` → `{date_to or 'now'}` · state=`{state}`"
 
