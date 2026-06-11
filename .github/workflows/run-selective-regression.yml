@@ -31,6 +31,11 @@ name: Run Selective Regression (Manual)
 on:
   workflow_dispatch:
     inputs:
+      dry_run:
+        description: "Dry run (analyse but do not trigger regression)"
+        required: false
+        type: boolean
+        default: false
       pr_numbers:
         description: "PR number(s), comma-separated (e.g. 2460,2461). If given, date range is ignored."
         required: false
@@ -526,6 +531,7 @@ jobs:
           GH_TOKEN: ${{ secrets.REGRESSION_TRIGGER_PAT }}
           REPO:     tr/CobaltRegressionTesting
           TEST_ENV: ${{ inputs.env }}
+          DRY_RUN:  ${{ inputs.dry_run }}
         run: |
           python3 - <<'EOF'
           import json, os, subprocess, sys
@@ -533,8 +539,13 @@ jobs:
 
           repo     = os.environ["REPO"]
           test_env = os.environ.get("TEST_ENV", "Demo")
+          dry_run  = os.environ.get("DRY_RUN", "false").lower() == "true"
           prs      = json.loads(Path("state/prs_discovered.json").read_text())
           gh       = "gh"
+
+          if dry_run:
+              print("DRY RUN — analysis complete, regression workflows will NOT be triggered.")
+
 
           ENV_ALIASES = {
               "Demo":   ["Demo", "DEMO"],
@@ -572,6 +583,12 @@ jobs:
 
               source_repo = pr_info.get("repo_full_name", "tr/cobalt_search")
               candidates  = list(dict.fromkeys([test_env] + ENV_ALIASES.get(test_env, [])))
+
+              if dry_run:
+                  print(f"  DRY  {repo_name} PR #{pr_num}: would dispatch {len(workflows)} workflow(s) [{test_env}]")
+                  dispatched += 1
+                  continue
+
               cmd = [
                   gh, "workflow", "run", "selective-regression.yml",
                   "--repo", repo,
@@ -594,7 +611,10 @@ jobs:
                   print(f"  FAIL {repo_name} PR #{pr_num}: {result.stderr.strip()}", file=sys.stderr)
                   failed += 1
 
-          print(f"\nDispatched: {dispatched}  Skipped: {skipped}  Failed: {failed}")
+          if dry_run:
+              print(f"\nDRY RUN — {dispatched} workflow(s) analysed, none triggered.")
+          else:
+              print(f"\nDispatched: {dispatched}  Skipped: {skipped}  Failed: {failed}")
           if failed > 0:
               sys.exit(1)
           EOF
@@ -609,6 +629,7 @@ jobs:
           DATE_TO:    ${{ inputs.date_to }}
           STATE:      ${{ inputs.state }}
           ENV_INPUT:  ${{ inputs.env }}
+          DRY_RUN:    ${{ inputs.dry_run }}
           PR_COUNT:   ${{ steps.discover.outputs.pr_count    || '0' }}
           WF_COUNT:   ${{ steps.map.outputs.workflow_count   || '0' }}
           PLAN_COUNT: ${{ steps.map.outputs.plan_count       || '0' }}
@@ -623,6 +644,7 @@ jobs:
           date_to    = os.environ.get("DATE_TO", "")
           state      = os.environ.get("STATE", "merged")
           env_input  = os.environ.get("ENV_INPUT", "Demo")
+          dry_run    = os.environ.get("DRY_RUN", "false").lower() == "true"
           pr_count   = int(os.environ.get("PR_COUNT", "0"))
           wf_count   = int(os.environ.get("WF_COUNT", "0"))
           plan_count = int(os.environ.get("PLAN_COUNT", "0"))
@@ -636,16 +658,26 @@ jobs:
 
           RISK_BADGE = {"high": "🔴 high", "medium": "🟡 medium", "low": "🟢 low"}
 
+          wf_display = f"{wf_count} (dry run)" if dry_run else str(wf_count)
+
           lines = [
               "## Run Selective Regression — Manual Dispatch",
               "",
+          ]
+          if dry_run:
+              lines += [
+                  "> [!NOTE]",
+                  "> **DRY RUN** — Analysis completed. No regression workflows were triggered.",
+                  "",
+              ]
+          lines += [
               "| Field | Value |",
               "|---|---|",
               f"| Mode | {mode} |",
               f"| Environment | **{env_input}** |",
               f"| PRs discovered | {pr_count} |",
               f"| Test plans built | {plan_count} |",
-              f"| Unique workflows dispatched | {wf_count} |",
+              f"| Unique workflows dispatched | {wf_display} |",
               "",
           ]
 
