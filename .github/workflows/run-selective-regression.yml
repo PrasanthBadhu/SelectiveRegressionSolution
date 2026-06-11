@@ -209,7 +209,7 @@ jobs:
                       # are included.  The break guard uses created_at with a 90-day
                       # buffer only to stop scanning once we're past the plausible
                       # creation window; it never excludes a PR from the results.
-                      pr_lookback = timedelta(days=90)
+                      pr_lookback = timedelta(days=180)
                       for pr in gh_repo.get_pulls(state="closed", sort="created",
                                                   direction="desc"):
                           if date_from and pr.created_at < (date_from - pr_lookback):
