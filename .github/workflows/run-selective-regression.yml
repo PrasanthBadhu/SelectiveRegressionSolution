@@ -178,11 +178,9 @@ jobs:
                           print(f"  PR #{num_str} not in {repo_full}: {e}", file=sys.stderr)
               else:
                   if state_filter == "merged" and date_from_raw:
-                      # Use the GitHub Search API with the merged: qualifier.
-                      # This matches merged_at directly — no sorting/pagination
-                      # workarounds needed. Long-lived PRs (lower numbers, created
-                      # weeks before the window but merged within it) are returned
-                      # just as any other PR.
+                      # PRIMARY: GitHub Search API — merged: qualifier queries
+                      # merged_at directly, so long-lived PRs (created weeks before
+                      # the window but merged within it) are included correctly.
                       range_end = date_to_raw if date_to_raw else date_from_raw
                       query = (f"repo:{repo_full} is:pr is:merged "
                                f"merged:{date_from_raw}..{range_end}")
@@ -194,13 +192,37 @@ jobs:
                                   pr = gh_repo.get_pull(issue.number)
                                   add_pr(pr, repo_entry)
                                   ts = pr.merged_at.date() if pr.merged_at else "?"
-                                  print(f"  PR #{pr.number} [{ts}]: {pr.title[:55]}",
+                                  print(f"  [search] PR #{pr.number} [{ts}]: {pr.title[:50]}",
                                         file=sys.stderr)
                               except GithubException as e:
                                   print(f"  WARNING: could not fetch PR #{issue.number}: {e}",
                                         file=sys.stderr)
                       except GithubException as e:
                           print(f"  WARNING: search failed for {repo_full}: {e}",
+                                file=sys.stderr)
+
+                      # SUPPLEMENT: paginate closed PRs and filter by merged_at.
+                      # Catches PRs the search index may have missed (index lag,
+                      # token scope gap on private-repo search, etc.).
+                      # Critically: the filter here uses merged_at — NOT created_at —
+                      # so PRs opened weeks before the window but merged within it
+                      # are included.  The break guard uses created_at with a 90-day
+                      # buffer only to stop scanning once we're past the plausible
+                      # creation window; it never excludes a PR from the results.
+                      pr_lookback = timedelta(days=90)
+                      for pr in gh_repo.get_pulls(state="closed", sort="created",
+                                                  direction="desc"):
+                          if date_from and pr.created_at < (date_from - pr_lookback):
+                              break   # nothing older can have merged_at in window
+                          if pr.merged_at is None:
+                              continue  # closed without merge
+                          if date_to   and pr.merged_at > date_to:
+                              continue  # merged after window
+                          if date_from and pr.merged_at < date_from:
+                              continue  # merged before window
+                          add_pr(pr, repo_entry)
+                          ts = pr.merged_at.date()
+                          print(f"  [scan]   PR #{pr.number} merged=[{ts}]: {pr.title[:48]}",
                                 file=sys.stderr)
                   else:
                       # Non-merged states: paginate with 90-day lookback on created_at.
