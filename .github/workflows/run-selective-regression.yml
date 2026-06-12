@@ -70,9 +70,9 @@ on:
         description: "Test environment to run against."
         required: false
         type: choice
-        default: "Demo"
+        default: "DEMO"
         options:
-          - Demo
+          - DEMO
           - QED
           - QEDAWS
 
