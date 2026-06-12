@@ -546,12 +546,13 @@ jobs:
           if dry_run:
               print("DRY RUN — analysis complete, regression workflows will NOT be triggered.")
 
-
-          ENV_ALIASES = {
-              "Demo":   ["Demo", "DEMO"],
-              "QED":    ["QED",  "Qed"],
-              "QEDAWS": ["QEDAWS"],
+          # Map our UI values to the uppercase values the target workflow expects
+          ENV_MAP = {
+              "Demo":   "DEMO",
+              "QED":    "QED",
+              "QEDAWS": "QEDAWS",
           }
+          dispatch_env = ENV_MAP.get(test_env, test_env.upper())
 
           dispatched = 0
           skipped    = 0
@@ -581,11 +582,8 @@ jobs:
                   skipped += 1
                   continue
 
-              source_repo = pr_info.get("repo_full_name", "tr/cobalt_search")
-              candidates  = list(dict.fromkeys([test_env] + ENV_ALIASES.get(test_env, [])))
-
               if dry_run:
-                  print(f"  DRY  {repo_name} PR #{pr_num}: would dispatch {len(workflows)} workflow(s) [{test_env}]")
+                  print(f"  DRY  {repo_name} PR #{pr_num}: would dispatch {len(workflows)} workflow(s) [{dispatch_env}]")
                   dispatched += 1
                   continue
 
@@ -600,11 +598,11 @@ jobs:
                   "-f", f"modules={','.join(plan.get('modules',[]))}",
                   "-f", f"products={','.join(plan.get('products',[]))}",
                   "-f", f"dotnet_workflows={','.join(workflows)}",
-                  "-f", f"TEST_ENVIRONMENT={candidates[0]}",
+                  "-f", f"TEST_ENVIRONMENT={dispatch_env}",
               ]
               result = subprocess.run(cmd, capture_output=True, text=True)
               if result.returncode == 0:
-                  print(f"  OK  {repo_name} PR #{pr_num}: dispatched {len(workflows)} workflow(s) [{test_env}]")
+                  print(f"  OK  {repo_name} PR #{pr_num}: dispatched {len(workflows)} workflow(s) [{dispatch_env}]")
                   dispatched += 1
               else:
                   print(f"  FAIL {repo_name} PR #{pr_num}: {result.stderr.strip()}", file=sys.stderr)
