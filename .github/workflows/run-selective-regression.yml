@@ -600,7 +600,6 @@ jobs:
                   "-f", f"modules={','.join(plan.get('modules',[]))}",
                   "-f", f"products={','.join(plan.get('products',[]))}",
                   "-f", f"dotnet_workflows={','.join(workflows)}",
-                  "-f", f"source_repo={source_repo}",
                   "-f", f"TEST_ENVIRONMENT={candidates[0]}",
               ]
               result = subprocess.run(cmd, capture_output=True, text=True)
