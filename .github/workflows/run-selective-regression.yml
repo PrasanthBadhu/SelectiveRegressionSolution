@@ -75,6 +75,11 @@ on:
           - DEMO
           - QED
           - QEDAWS
+      max_prs:
+        description: "Max PRs to process per repo (prevents timeout on broad date ranges). Default: 100."
+        required: false
+        type: string
+        default: "100"
 
 permissions:
   contents: read
@@ -85,7 +90,7 @@ jobs:
   run-selective-regression:
     name: Discover PRs and dispatch selective regression
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       # ── Step 0: Checkout (provides bundled tools + feature-map) ─────────────
@@ -115,6 +120,7 @@ jobs:
           DATE_FROM:    ${{ inputs.date_from }}
           DATE_TO:      ${{ inputs.date_to }}
           STATE:        ${{ inputs.state }}
+          MAX_PRS:      ${{ inputs.max_prs }}
         run: |
           python3 - <<'EOF'
           import os, json, sys, yaml, subprocess
@@ -336,6 +342,23 @@ jobs:
                           print(f"  PR #{pr.number} [{created.date()}]: {pr.title[:55]}",
                                 file=sys.stderr)
 
+          # Apply per-repo cap to prevent timeouts on broad date-range scans.
+          max_prs_str = os.environ.get("MAX_PRS", "100").strip()
+          max_prs = int(max_prs_str) if max_prs_str.isdigit() and int(max_prs_str) > 0 else 100
+          if not pr_numbers_raw:
+              from collections import defaultdict
+              _by_repo = defaultdict(list)
+              for p in pr_list:
+                  _by_repo[p["repo_name"]].append(p)
+              pr_list = []
+              for rname, rlist in _by_repo.items():
+                  if len(rlist) > max_prs:
+                      print(f"  WARNING: {rname} has {len(rlist)} PRs — capping at {max_prs}. "
+                            f"Use a narrower date range or increase max_prs.", file=sys.stderr)
+                      print(f"::warning::{rname}: {len(rlist)} PRs found, capped at {max_prs}. "
+                            f"Narrow your date range or increase max_prs.")
+                  pr_list.extend(rlist[:max_prs])
+
           print(f"\nTotal PRs to analyze: {len(pr_list)} "
                 f"across {len(enabled_repos)} repo(s)", file=sys.stderr)
 
@@ -346,45 +369,159 @@ jobs:
               f.write(f"pr_count={len(pr_list)}\n")
           EOF
 
-      # ── Step 3: Analyze PR file impact (per-repo) ───────────────────────────
+      # ── Step 3: Analyze PR file impact (concurrent, no per-PR subprocess) ────
       - name: Analyze PR impact
         if: steps.discover.outputs.pr_count != '0'
         id: analyze
         env:
-          GITHUB_TOKEN: ${{ secrets.COBALT_READ_TOKEN }}
+          GH_TOKEN: ${{ secrets.COBALT_READ_TOKEN }}
         run: |
           python3 - <<'EOF'
-          import json, os, subprocess, sys
+          import json, os, re, sys, subprocess, yaml
+          from datetime import datetime, timezone
           from pathlib import Path
+          from concurrent.futures import ThreadPoolExecutor, as_completed
 
           prs = json.loads(Path("state/prs_discovered.json").read_text())
 
-          for pr_info in prs:
-              pr_num         = pr_info["number"]
-              repo_name      = pr_info.get("repo_name",      "cobalt_search")
-              repo_full_name = pr_info.get("repo_full_name", "tr/cobalt_search")
-              fm_local       = pr_info.get("feature_map_local", "")
+          # --- Feature-map helpers ---
+          _fm_cache = {}
+          def _load_fm(fm_local):
+              key = fm_local or "config/feature-map.yml"
+              if key not in _fm_cache:
+                  p = Path(key)
+                  if not p.exists():
+                      p = Path("config/feature-map.yml")
+                  _fm_cache[key] = yaml.safe_load(p.read_text()) if p.exists() else {}
+              return _fm_cache[key]
 
-              state_dir = Path(f"state/{repo_name}")
-              state_dir.mkdir(parents=True, exist_ok=True)
+          _DEFAULT_MODULES = {
+              "SearchCommon": "SearchCommon/", "SearchMetadataObjects": "SearchMetadataObjects/",
+              "SearchSerialized": "SearchSerialized/", "CarswellEcosystem": "CarswellEcosystem/",
+              "CobaltPlatformSearch": "CobaltPlatformSearch/", "CarswellSearchWeb": "CarswellSearchWeb/",
+              "TNPCarswellSearchWeb": "TNPCarswellSearchWeb/", "WFASearchWeb": "WFASearchWeb/",
+              "WLNSearch": "WLNSearch/", "CorrectionalSearch": "CorrectionalSearch/",
+              "DraftingSearch": "DraftingSearch/", "WeblinksSearch": "WeblinksSearch/",
+          }
 
-              cmd = [
-                  sys.executable, "tools/pr_impact_analyzer.py",
-                  "--repo",      repo_full_name,
-                  "--state-dir", str(state_dir),
-                  "--force-prs", str(pr_num),
-              ]
-              if fm_local and Path(fm_local).exists():
-                  cmd += ["--feature-map", fm_local]
+          def _module_prefixes(fm):
+              mods = fm.get("modules") or {}
+              return {m: m + "/" for m in mods.keys()} if mods else _DEFAULT_MODULES
 
-              result = subprocess.run(cmd, capture_output=True, text=True, env=os.environ.copy())
-              if result.returncode != 0:
-                  print(f"  WARNING: analysis failed for {repo_name} PR #{pr_num}: "
-                        f"{result.stderr.strip()}", file=sys.stderr)
-                  continue
-              print(f"  Analyzed {repo_name} PR #{pr_num}")
-              if result.stderr.strip():
-                  print(f"    {result.stderr.strip()}", file=sys.stderr)
+          def _sub_path_products(fm):
+              return {
+                  pfx: e.get("product", pfx.split("/")[-2] if "/" in pfx else pfx)
+                  for pfx, e in (fm.get("sub_paths") or {}).items()
+              }
+
+          CHANGE_TYPE_MAP = [
+              (r"^feat", "feature"), (r"^fix", "bug_fix"), (r"^bug", "bug_fix"),
+              (r"^refactor", "refactor"), (r"^test", "test"), (r"^docs?", "docs"),
+              (r"^chore", "chore"), (r"^ci", "chore"), (r"^build", "chore"),
+              (r"^breaking", "breaking_change"),
+          ]
+          HIGH_RISK_PATTERNS  = [r"breaking", r"migration", r"schema", r"serializ",
+                                   r"api.?change", r"remove", r"deprecat", r"security",
+                                   r"auth", r"critical"]
+          MEDIUM_RISK_PATTERNS = [r"fix", r"search", r"query", r"index", r"filter",
+                                   r"limit", r"performance", r"timeout", r"exception"]
+          HIGH_RISK_MODULES = {"SearchCommon", "SearchSerialized", "CobaltPlatformSearch"}
+
+          def detect_modules(fps, mods):
+              return sorted({m for fp in fps for m, pfx in mods.items() if fp.startswith(pfx)}) or ["unknown"]
+
+          def detect_sub_products(fps, subs):
+              return sorted({prod for fp in fps for pfx, prod in subs.items() if fp.startswith(pfx)})
+
+          def detect_keyword_products(title):
+              t = title.lower()
+              kw = {"brazil": "brazil", "wluk": "wluk", "uk companies": "wluk",
+                    "aunz": "aunz", "anz": "aunz", "phone plus": "publicrecords",
+                    "cad alert": "carswell", "cover page": "carswell", "citing": "carswell",
+                    "presearch": "platform", "advanced query": "platform", "facet": "wln"}
+              return sorted({prod for k, prod in kw.items() if k in t})
+
+          def detect_change_type(title):
+              for pat, ct in CHANGE_TYPE_MAP:
+                  if re.search(pat, title, re.IGNORECASE): return ct
+              return "chore"
+
+          def detect_risk(title, modules):
+              c = title.lower()
+              for p in HIGH_RISK_PATTERNS:
+                  if re.search(p, c): return "high"
+              if any(m in HIGH_RISK_MODULES for m in modules): return "medium"
+              for p in MEDIUM_RISK_PATTERNS:
+                  if re.search(p, c): return "medium"
+              return "low"
+
+          def fetch_and_analyze(pr_info):
+              pr_num    = pr_info["number"]
+              repo_full = pr_info.get("repo_full_name", "tr/cobalt_search")
+              repo_name = pr_info.get("repo_name",      "cobalt_search")
+              fm_local  = pr_info.get("feature_map_local", "")
+              title     = pr_info.get("title", "")
+
+              # Fetch changed files via gh CLI (uses GH_TOKEN, no PyGitHub needed)
+              r = subprocess.run(
+                  ["gh", "pr", "view", str(pr_num), "--repo", repo_full, "--json", "files"],
+                  capture_output=True, text=True
+              )
+              file_paths = []
+              if r.returncode == 0 and r.stdout.strip():
+                  file_paths = [f["path"] for f in json.loads(r.stdout).get("files", [])]
+
+              fm   = _load_fm(fm_local)
+              mods = _module_prefixes(fm)
+              subs = _sub_path_products(fm)
+
+              modules      = detect_modules(file_paths, mods)
+              sub_products = detect_sub_products(file_paths, subs)
+              kw_products  = detect_keyword_products(title)
+              all_products = sorted(set(sub_products + kw_products) or {"platform"})
+
+              impact = {
+                  "pr_number":        pr_num,
+                  "pr_title":         title,
+                  "pr_author":        "",
+                  "pr_url":           pr_info.get("html_url", ""),
+                  "head_sha":         pr_info.get("head_sha", ""),
+                  "base_branch":      "",
+                  "state":            pr_info.get("state", "closed"),
+                  "created_at":       pr_info.get("created_at", ""),
+                  "updated_at":       None,
+                  "merged_at":        pr_info.get("merged_at", ""),
+                  "labels":           [],
+                  "changed_files":    len(file_paths),
+                  "additions":        0,
+                  "deletions":        0,
+                  "file_paths":       file_paths,
+                  "modules_affected": modules,
+                  "sub_products":     sub_products,
+                  "keyword_products": kw_products,
+                  "all_products":     all_products,
+                  "change_type":      detect_change_type(title),
+                  "risk_level":       detect_risk(title, modules),
+                  "analyzed_at":      datetime.now(timezone.utc).isoformat(),
+              }
+
+              out_dir = Path(f"state/{repo_name}/pr_impacts")
+              out_dir.mkdir(parents=True, exist_ok=True)
+              (out_dir / f"pr_{pr_num}.json").write_text(json.dumps(impact, indent=2))
+              return pr_num, repo_name, len(file_paths)
+
+          MAX_WORKERS = 10
+          print(f"Analyzing {len(prs)} PR(s) with {MAX_WORKERS} parallel workers...",
+                file=sys.stderr)
+          with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+              futures = {executor.submit(fetch_and_analyze, pr): pr for pr in prs}
+              for future in as_completed(futures):
+                  try:
+                      pr_num, repo_name, nfiles = future.result()
+                      print(f"  Analyzed {repo_name} PR #{pr_num}: {nfiles} file(s)")
+                  except Exception as exc:
+                      print(f"  WARNING: analysis error: {exc}", file=sys.stderr)
+          print("Analysis complete.")
           EOF
 
       # ── Step 4: Map impact to WL_DNet workflows (per-repo feature-map) ───────
