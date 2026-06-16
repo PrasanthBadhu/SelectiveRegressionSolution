@@ -989,6 +989,18 @@ keywords:
       - FolderAnalysisKeyCite
       - EdgeSmokeFeatures
 
+  "litigation analytics":
+    product: LitigationAnalytics
+    test_categories:
+      - LitigationAnalyticsDeliveryTests
+      - LA_Filtering
+      - LA_OpportunityFinderTests
+
+  "opportunity finder":
+    product: LitigationAnalytics
+    test_categories:
+      - LA_OpportunityFinderTests
+
   "related info":
     product: RelatedInfo
     test_categories:

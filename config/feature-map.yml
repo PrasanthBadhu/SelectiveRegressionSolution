@@ -366,6 +366,18 @@ keywords:
     test_categories:
       - RelatedInfoKeyciteCommand
 
+  "litigation analytics":
+    product: LitigationAnalytics
+    test_categories:
+      - LitigationAnalyticsDeliveryTests
+      - LA_Filtering
+      - LA_OpportunityFinderTests
+
+  "opportunity finder":
+    product: LitigationAnalytics
+    test_categories:
+      - LA_OpportunityFinderTests
+
   "portal manager":
     product: PortalManager
     test_categories:
