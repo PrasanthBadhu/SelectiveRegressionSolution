@@ -61,7 +61,7 @@
 
 | Source Repo | Feature Map (local) | Fetched from (fallback) |
 |---|---|---|
-| tr/cobalt_search | `config/feature-map.yml` | tr/Seven-Kingdoms `feature-map.yml` |
+| tr/cobalt_search | `config/feature-map-search.yml` | tr/Seven-Kingdoms `feature-map-search.yml` |
 | tr/cobalt_website | `config/feature-map-website.yml` | tr/Seven-Kingdoms `feature-map-website.yml` |
 | tr/cobalt_static-content | `config/feature-map-static-content.yml` | tr/Seven-Kingdoms `feature-map-static-content.yml` |
 
@@ -100,7 +100,7 @@ source-repo changed files   (cobalt_search | cobalt_website | cobalt_static-cont
 
 ## 3. Feature Map Coverage (as of 2026-06-09)
 
-### feature-map.yml  (cobalt_search)
+### feature-map-search.yml  (cobalt_search)
 
 | Section | Count | Notes |
 |---|---|---|
@@ -148,7 +148,7 @@ source-repo changed files   (cobalt_search | cobalt_website | cobalt_static-cont
 | `.github/workflows/selective-regression.yml` | **UPDATED** | Added optional `source_repo` input; null-safe `classify_file` |
 | `.github/workflows/run-selective-regression.yml` | **UPDATED** | Same null-safe `classify_file` fix applied |
 | `config/repo-registry.yml` | **NEW** | Registers cobalt_search, cobalt_website, cobalt_static-content |
-| `config/feature-map.yml` | **UPDATED** | Fixed duplicate `analytics` keyword (was silently dropping 5 categories); added TrdSmoke |
+| `config/feature-map-search.yml` | **UPDATED** | Fixed duplicate `analytics` keyword (was silently dropping 5 categories); added TrdSmoke |
 | `config/feature-map-website.yml` | **NEW** | Full map: 19 modules, 22+ sub_paths, 35+ keywords |
 | `config/feature-map-static-content.yml` | **NEW** | Full map: 17 modules, 40+ sub_paths, 35+ keywords |
 | `tools/pr_impact_analyzer.py` | **UPDATED** | Added `--repo`, `--state-dir`, `--feature-map`, `--force-prs` flags; null-safe YAML loading |
@@ -160,7 +160,7 @@ source-repo changed files   (cobalt_search | cobalt_website | cobalt_static-cont
 
 | File | Status | Action |
 |---|---|---|
-| `feature-map.yml` | **UPDATED** | Copy from `config/feature-map.yml` — same content, dual-homed for API fallback |
+| `feature-map-search.yml` | **UPDATED** | Copy from `config/feature-map-search.yml` — same content, dual-homed for API fallback |
 | `feature-map-website.yml` | **NEW** | Copy from `config/feature-map-website.yml` |
 | `feature-map-static-content.yml` | **NEW** | Copy from `config/feature-map-static-content.yml` |
 
@@ -195,7 +195,7 @@ fm_high_risk = (feature_map.get("high_risk_always_add") or {})
 
 Same pattern applied in `tools/pr_impact_analyzer.py` and both workflow `classify_file` functions.
 
-### Duplicate analytics keyword fix (feature-map.yml)
+### Duplicate analytics keyword fix (feature-map-search.yml)
 
 **Root cause:** Two `analytics:` entries in the keywords section. YAML silently drops the first when a key appears twice; the shorter second entry survived, losing `LegalAnalyticsApi`, `LitigationAnalytics`, `TrdLegalAnalyticsUi`, `TrdSmoke`, `TrdApi`, `TrdFacets`.
 
@@ -230,7 +230,7 @@ git push origin state-tracking
 **Step 2 — Deploy config files**
 ```bash
 git add config/repo-registry.yml
-git add config/feature-map.yml            # updated (duplicate analytics fix)
+git add config/feature-map-search.yml            # updated (duplicate analytics fix)
 git add config/feature-map-website.yml    # new
 git add config/feature-map-static-content.yml  # new
 git commit -m "feat: add multi-repo registry and feature maps for website and static-content"
@@ -263,10 +263,10 @@ git push origin main
 **Step 6 — Deploy feature maps to Seven-Kingdoms (fallback copies)**
 ```bash
 # In tr/Seven-Kingdoms
-cp <solution>/config/feature-map.yml .
+cp <solution>/config/feature-map-search.yml .
 cp <solution>/config/feature-map-website.yml .
 cp <solution>/config/feature-map-static-content.yml .
-git add feature-map.yml feature-map-website.yml feature-map-static-content.yml
+git add feature-map-search.yml feature-map-website.yml feature-map-static-content.yml
 git commit -m "feat: add website and static-content feature maps"
 git push origin main
 ```
@@ -485,7 +485,7 @@ C:\SelectiveRegressionSolution\
 │
 ├── config\
 │   ├── repo-registry.yml                ← NEW  → deploy to tr/CobaltRegressionTesting
-│   ├── feature-map.yml                  ← UPDATED (duplicate analytics fix; TrdSmoke added)
+│   ├── feature-map-search.yml                  ← UPDATED (duplicate analytics fix; TrdSmoke added)
 │   ├── feature-map-website.yml          ← NEW  → deploy to CobaltRegressionTesting + Seven-Kingdoms
 │   └── feature-map-static-content.yml  ← NEW  → deploy to CobaltRegressionTesting + Seven-Kingdoms
 │

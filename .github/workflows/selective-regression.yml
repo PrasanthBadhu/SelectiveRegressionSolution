@@ -9,7 +9,7 @@
 #   then analyze their file impact, map to TestCategory names, and dispatch the
 #   appropriate WL_DNet_*.yml regression workflows.
 #
-#   Fully self-contained: uses bundled config/feature-map.yml and tools/ scripts
+#   Fully self-contained: uses bundled config/feature-map-search.yml and tools/ scripts
 #   — no runtime dependency on tr/Seven-Kingdoms or tr/CobaltRegressionTesting.
 #
 # Inputs:
@@ -373,12 +373,12 @@ jobs:
           for pr_info in prs:
               pr_num    = pr_info["number"]
               repo_name = pr_info.get("repo_name", "cobalt_search")
-              fm_local  = pr_info.get("feature_map_local", "config/feature-map.yml")
+              fm_local  = pr_info.get("feature_map_local", "config/feature-map-search.yml")
               pr_key    = f"{repo_name}_{pr_num}"
 
               # Use repo-specific feature map if present, else fall back to cobalt_search map
               fm_path     = fm_local if fm_local and Path(fm_local).exists() \
-                            else "config/feature-map.yml"
+                            else "config/feature-map-search.yml"
               impact_file = Path(f"state/{repo_name}/pr_impacts/pr_{pr_num}.json")
               plan_file   = plans_dir / f"{pr_key}.json"
 
@@ -430,7 +430,7 @@ jobs:
               if path not in _fm_cache:
                   p = Path(path)
                   if not p.exists():
-                      p = Path("config/feature-map.yml")
+                      p = Path("config/feature-map-search.yml")
                   _fm_cache[path] = yaml.safe_load(p.read_text())
               return _fm_cache[path]
 
@@ -469,14 +469,14 @@ jobs:
           for pr_info in prs:
               pr_num    = pr_info["number"]
               repo_name = pr_info.get("repo_name", "cobalt_search")
-              fm_local  = pr_info.get("feature_map_local", "config/feature-map.yml")
+              fm_local  = pr_info.get("feature_map_local", "config/feature-map-search.yml")
               pr_key    = f"{repo_name}_{pr_num}"
 
               impact_file = Path(f"state/{repo_name}/pr_impacts/pr_{pr_num}.json")
               if not impact_file.exists():
                   continue
 
-              fm         = load_fm(fm_local or "config/feature-map.yml")
+              fm         = load_fm(fm_local or "config/feature-map-search.yml")
               impact     = json.loads(impact_file.read_text())
               file_paths = impact.get("file_paths", [])
               files      = [{"filename": fp, **classify_file(fp, fm)} for fp in file_paths]

@@ -2,13 +2,13 @@
 """
 feature_test_mapper.py
 ======================
-Reads feature-map.yml from tr/Seven-Kingdoms (via GitHub API) and resolves
+Reads feature-map-search.yml from tr/Seven-Kingdoms (via GitHub API) and resolves
 which WL_DNet_*.yml workflows to run for a given PR impact dict.
 
 Mapping chain:
   cobalt_search changed files
     -> module / sub_path / keyword  (pr_impact_analyzer.py)
-      -> TestCategory names          (feature-map.yml in Seven-Kingdoms)
+      -> TestCategory names          (feature-map-search.yml in Seven-Kingdoms)
         -> bat files                 (CATEGORY_NAME=TestCategory=<name> in bat files)
           -> WL_DNet_*.yml workflows (bat_file: <name>.bat in workflow yml files)
 
@@ -36,7 +36,7 @@ except ImportError:
     yaml = None
 
 TEST_MAP_REPO = "tr/Seven-Kingdoms"
-TEST_MAP_PATH = "feature-map.yml"
+TEST_MAP_PATH = "feature-map-search.yml"
 
 # ---------------------------------------------------------------------------
 # TestCategory -> WL_DNet workflow mapping
@@ -291,7 +291,7 @@ def load_yaml_from_github(gh_token: str) -> dict:
             return yaml.safe_load(raw)
         raise RuntimeError("PyYAML not installed")
     except GithubException as e:
-        local = Path(__file__).parent.parent / "feature-map.yml"
+        local = Path(__file__).parent.parent / "feature-map-search.yml"
         if local.exists():
             print(f"Warning: Could not fetch from GitHub ({e}); using local copy", file=sys.stderr)
             return yaml.safe_load(local.read_text()) if yaml else {}

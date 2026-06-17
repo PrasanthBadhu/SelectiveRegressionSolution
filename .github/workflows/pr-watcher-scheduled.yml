@@ -33,7 +33,7 @@
 # Adding a new source repository:
 #   1. Add an entry to config/repo-registry.yml (enabled: true)
 #   2. Add a read-token secret for that repo if different from COBALT_READ_TOKEN
-#   3. If the repo has a different module structure, add a new feature-map.yml
+#   3. If the repo has a different module structure, add a new feature-map-search.yml
 #      in Seven-Kingdoms and set feature_map_path in the registry entry
 ################################################################################
 
@@ -251,7 +251,7 @@ jobs:
               impact_data = {k: v for k, v in pr.items() if not k.startswith("_")}
               impact_file.write_text(json.dumps(impact_data, indent=2))
 
-              # Optionally use a local copy of feature-map.yml (avoids GitHub API call)
+              # Optionally use a local copy of feature-map-search.yml (avoids GitHub API call)
               local_map = repo_cfg.get("feature_map_local", "")
               cmd = [
                   sys.executable, "tools/feature_test_mapper.py",
