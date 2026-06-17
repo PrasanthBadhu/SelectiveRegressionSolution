@@ -57,6 +57,8 @@ modules:
       - RelatedInfoReferences
       - FolderAnalysisKeyCite
       - GraphicalHistory
+      - CitingReferences
+      - NegativeHistory
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -95,6 +97,8 @@ modules:
       - RelatedInfoReferences
       - FolderAnalysisKeyCite
       - GraphicalHistory
+      - CitingReferences
+      - NegativeHistory
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -188,6 +192,8 @@ sub_paths:
       - RelatedInfoReferences
       - FolderAnalysisKeyCite
       - GraphicalHistory
+      - CitingReferences
+      - NegativeHistory
       - EdgeSmokeFeatures
 
   "RelatedInfo/GraphicalKeyciteTests/":
@@ -243,6 +249,8 @@ sub_paths:
       - RelatedInfoReferences
       - FolderAnalysisKeyCite
       - GraphicalHistory
+      - CitingReferences
+      - NegativeHistory
       - EdgeSmokeFeatures
 
   "WLNRelatedInfo/EndpointTests/":
@@ -406,6 +414,7 @@ keywords:
   "citing references":
     product: RelatedInfo
     test_categories:
+      - CitingReferences
       - RelatedInfoReferences
       - RelatedInfoContent
       - EdgeSmokeFeatures
@@ -436,6 +445,23 @@ keywords:
     test_categories:
       - RelatedInfoFlags
       - RelatedInfoKeyciteCommand
+      - NegativeHistory
+      - EdgeSmokeFeatures
+
+  "negative history":
+    product: RelatedInfo
+    test_categories:
+      - NegativeHistory
+      - RelatedInfoFlags
+      - RelatedInfoKeyciteCommand
+      - EdgeSmokeFeatures
+
+  "citing reference":
+    product: RelatedInfo
+    test_categories:
+      - CitingReferences
+      - RelatedInfoReferences
+      - RelatedInfoContent
       - EdgeSmokeFeatures
 
   serialization:

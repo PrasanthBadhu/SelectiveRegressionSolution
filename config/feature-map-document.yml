@@ -33,7 +33,7 @@
 #   docs/                   Documentation (skip_all applied via change_type_rules)
 ################################################################################
 
-version: "1.0"
+version: "2.0"
 last_updated: "2026-06-17"
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -53,6 +53,17 @@ modules:
       - PrPSynopsisDelivery
       - ResearchReportsDelivery
       - RelatedInfoDelivery
+      - FocusHighlighting
+      - FocusHighlighting1
+      - SnippetCompare
+      - SnippetNav
+      - SaveSnippet_Edge
+      - TCOSectionEdge
+      - ToC
+      - VersionsCompare
+      - CitingReferences
+      - PublicDomainCitationsEdge
+      - PublicDomainCitationsWln
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -68,6 +79,17 @@ modules:
       - RelatedInfoDelivery
       - CoreSearch
       - GlobalSearch
+      - HotDocs
+      - TCOSectionWln
+      - ToC
+      - FocusHighlighting
+      - FocusHighlighting1
+      - VersionsCompare
+      - SnippetCompare
+      - SnippetNav
+      - SaveSnippet_Edge
+      - PublicDomainCitationsEdge
+      - PublicDomainCitationsWln
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -80,6 +102,7 @@ modules:
       - TrilliumWebSite
       - DocDisplay
       - DOCX
+      - ProceduralPosture
       - EdgeSmokeFeatures
     risk_multiplier: medium
 
@@ -148,6 +171,12 @@ sub_paths:
       - DocDisplay
       - DOCX
       - WebsiteDelivery
+      - FocusHighlighting
+      - FocusHighlighting1
+      - SnippetNav
+      - SaveSnippet_Edge
+      - VersionsCompare
+      - CitingReferences
       - EdgeSmokeFeatures
 
   "Document/Document/Pipeline/":
@@ -162,6 +191,26 @@ sub_paths:
   "Document/Document/Domain/":
     product: Document
     test_categories:
+      - Document
+      - DocDisplay
+      - ToC
+      - TCOSectionEdge
+      - EdgeSmokeFeatures
+
+  "Document/Document/Domain/DocumentOutline/":
+    product: Document
+    test_categories:
+      - ToC
+      - TCOSectionEdge
+      - DocDisplay
+      - Document
+      - EdgeSmokeFeatures
+
+  "Document/Document/Provider/CrossVertical/DocCompare/":
+    product: Document
+    test_categories:
+      - SnippetCompare
+      - VersionsCompare
       - Document
       - DocDisplay
       - EdgeSmokeFeatures
@@ -196,6 +245,39 @@ sub_paths:
       - RelatedInfoDelivery
       - CoreSearch
       - GlobalSearch
+      - EdgeSmokeFeatures
+
+  # ── WLN Document (actual repo path for WestlawNext module) ───────────────────
+  "WestlawNext/WLNDocument/":
+    product: WestlawNext
+    test_categories:
+      - Document
+      - DocDisplay
+      - DOCX
+      - WebsiteDelivery
+      - PrPSynopsisDelivery
+      - ResearchReportsDelivery
+      - RelatedInfoDelivery
+      - CoreSearch
+      - GlobalSearch
+      - HotDocs
+      - VersionsCompare
+      - SnippetCompare
+      - SnippetNav
+      - SaveSnippet_Edge
+      - FocusHighlighting
+      - FocusHighlighting1
+      - PublicDomainCitationsEdge
+      - PublicDomainCitationsWln
+      - EdgeSmokeFeatures
+
+  "WestlawNext/WLNDocument/Domain/DocumentOutline/":
+    product: WestlawNext
+    test_categories:
+      - ToC
+      - TCOSectionWln
+      - DocDisplay
+      - Document
       - EdgeSmokeFeatures
 
   "WestlawNext/WestlawNextIntegrationTests/":
@@ -439,6 +521,134 @@ keywords:
     test_categories:
       - DocDisplay
       - Document
+      - EdgeSmokeFeatures
+
+  "focus highlight":
+    product: Document
+    test_categories:
+      - FocusHighlighting
+      - FocusHighlighting1
+      - DocDisplay
+      - Document
+      - EdgeSmokeFeatures
+
+  "table of contents":
+    product: Document
+    test_categories:
+      - ToC
+      - TCOSectionEdge
+      - TCOSectionWln
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  toc:
+    product: Document
+    test_categories:
+      - ToC
+      - TCOSectionEdge
+      - TCOSectionWln
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  tco:
+    product: Document
+    test_categories:
+      - TCOSectionEdge
+      - TCOSectionWln
+      - ToC
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  "versions compare":
+    product: Document
+    test_categories:
+      - VersionsCompare
+      - Document
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  "compare documents":
+    product: Document
+    test_categories:
+      - VersionsCompare
+      - SnippetCompare
+      - Document
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  snippet:
+    product: Document
+    test_categories:
+      - SnippetNav
+      - SnippetCompare
+      - SaveSnippet_Edge
+      - Document
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  "save snippet":
+    product: Document
+    test_categories:
+      - SaveSnippet_Edge
+      - Document
+      - EdgeSmokeFeatures
+
+  "snippet compare":
+    product: Document
+    test_categories:
+      - SnippetCompare
+      - VersionsCompare
+      - Document
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  "snippet navigation":
+    product: Document
+    test_categories:
+      - SnippetNav
+      - Document
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  hotdocs:
+    product: Document
+    test_categories:
+      - HotDocs
+      - DocDisplay
+      - Document
+      - EdgeSmokeFeatures
+
+  "hot docs":
+    product: Document
+    test_categories:
+      - HotDocs
+      - DocDisplay
+      - Document
+      - EdgeSmokeFeatures
+
+  "citing reference":
+    product: Document
+    test_categories:
+      - CitingReferences
+      - RelatedInfoReferences
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  "public domain":
+    product: Document
+    test_categories:
+      - PublicDomainCitationsEdge
+      - PublicDomainCitationsWln
+      - DocDisplay
+      - Document
+      - EdgeSmokeFeatures
+
+  "procedural posture":
+    product: Canada
+    test_categories:
+      - ProceduralPosture
+      - CanadaDocDisplay
+      - DocumentMisc
       - EdgeSmokeFeatures
 
 # ──────────────────────────────────────────────────────────────────────────────

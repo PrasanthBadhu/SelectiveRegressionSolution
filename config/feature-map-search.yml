@@ -20,8 +20,8 @@
 #           -> WL_DNet_*.yml workflows
 ################################################################################
 
-version: "4.0"
-last_updated: "2026-04-08"
+version: "5.0"
+last_updated: "2026-06-17"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # MODULE MAPPINGS
@@ -47,6 +47,15 @@ modules:
       - SmartSearch
       - WlnEdgeSearch
       - MultipleSearchWithin_Edge
+      - GoldReportQuery
+      - GoldReportQuery2
+      - SearchEnhancements
+      - SearchTermEmphasis_Edge
+      - MultipleSearchWithinTermNavigation
+      - FilterPanelUpdateEdge
+      - FavoriteSearches
+      - CustomDigestSearch
+      - NextMissingTerms
     risk_multiplier: high
 
   SearchMetadataObjects:
@@ -92,6 +101,15 @@ modules:
       - SmartSearch
       - WlnEdgeSearch
       - MultipleSearchWithin_Edge
+      - GoldReportQuery
+      - GoldReportQuery2
+      - SearchEnhancements
+      - SearchTermEmphasis_Edge
+      - MultipleSearchWithinTermNavigation
+      - FilterPanelUpdateEdge
+      - FavoriteSearches
+      - CustomDigestSearch
+      - NextMissingTerms
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -139,6 +157,31 @@ modules:
       - Wln_Enhancement_tests1
       - Wln_Enhancement_tests2
       - Wln_Enhancement_tests3
+      - GoldReportQuery
+      - GoldReportQuery2
+      - ImpliedOverrulings
+      - NegativeHistory
+      - RepealedFacets
+      - SearchEnhancements
+      - SearchTermEmphasis_Edge
+      - MultipleSearchWithinTermNavigation
+      - FilterPanelUpdateEdge
+      - FavoriteSearches
+      - CustomDigestSearch
+      - PublicDomainCitationsEdge
+      - PublicDomainCitationsWln
+      - NextMissingTerms
+      - IndigoTrdTypeahead
+      - ImageEdgeSearch
+      - ImageSearch
+      - MedicalLitigator
+      - MedicalLitigatorRegression
+      - InternationalFind
+      - ItDepends
+      - CitingReferences
+      - ProceduralPosture
+      - SecondarySources
+      - BasicQnA
       - EdgeSmokeFeatures
     risk_multiplier: medium
 
@@ -196,6 +239,7 @@ sub_paths:
       - WLPASmoke
       - NzProdSmokeTest
       - WLPNZSmoke
+      - Aug2025-Transition
 
   "WLNSearch/src/com/trgr/cobalt/search2/wln/wlglobal/":
     product: WLGlobal
@@ -274,6 +318,7 @@ keywords:
       - AnzWebsite
       - AuProdSmokeTest
       - NzProdSmokeTest
+      - Aug2025-Transition
 
   anz:
     product: AUNZ
@@ -285,6 +330,7 @@ keywords:
       - AnzRelatedInfo
       - AuProdSmokeTest
       - NzProdSmokeTest
+      - Aug2025-Transition
 
   canada:
     product: Canada
@@ -568,6 +614,181 @@ keywords:
     test_categories:
       - Trillium
       - TrilliumWebSite
+
+  # ── New keywords for previously unmapped test categories ─────────────────────
+  "gold report":
+    product: Search
+    test_categories:
+      - GoldReportQuery
+      - GoldReportQuery2
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  "implied overruling":
+    product: Search
+    test_categories:
+      - ImpliedOverrulings
+      - NegativeHistory
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "negative history":
+    product: Search
+    test_categories:
+      - NegativeHistory
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "repealed":
+    product: Search
+    test_categories:
+      - RepealedFacets
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "search enhancement":
+    product: Search
+    test_categories:
+      - SearchEnhancements
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  "term emphasis":
+    product: Search
+    test_categories:
+      - SearchTermEmphasis_Edge
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "search within term":
+    product: Search
+    test_categories:
+      - MultipleSearchWithinTermNavigation
+      - MultipleSearchWithin_Edge
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "filter panel":
+    product: Search
+    test_categories:
+      - FilterPanelUpdateEdge
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "favorite search":
+    product: Search
+    test_categories:
+      - FavoriteSearches
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "custom digest":
+    product: Search
+    test_categories:
+      - CustomDigestSearch
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "missing terms":
+    product: Search
+    test_categories:
+      - NextMissingTerms
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "trd typeahead":
+    product: Search
+    test_categories:
+      - IndigoTrdTypeahead
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "image search":
+    product: Search
+    test_categories:
+      - ImageEdgeSearch
+      - ImageSearch
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  medical:
+    product: Search
+    test_categories:
+      - MedicalLitigator
+      - MedicalLitigatorRegression
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  international:
+    product: Search
+    test_categories:
+      - InternationalFind
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "it depends":
+    product: Search
+    test_categories:
+      - ItDepends
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "secondary source":
+    product: Search
+    test_categories:
+      - SecondarySources
+      - CoreSearch
+      - BrowsePageSearch
+      - EdgeSmokeFeatures
+
+  "public domain":
+    product: Search
+    test_categories:
+      - PublicDomainCitationsEdge
+      - PublicDomainCitationsWln
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "citing reference":
+    product: RelatedInfo
+    test_categories:
+      - CitingReferences
+      - RelatedInfoReferences
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "procedural posture":
+    product: Canada
+    test_categories:
+      - ProceduralPosture
+      - Search
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "basic q":
+    product: Search
+    test_categories:
+      - BasicQnA
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "aug 2025":
+    product: AUNZ
+    test_categories:
+      - Aug2025-Transition
+      - AnzEdgeRegression
+      - AnzWebsite
+      - EdgeSmokeFeatures
+
+  "bau stories":
+    product: AUNZ
+    test_categories:
+      - Aug2025-Transition
+      - AnzEdgeRegression
+      - AnzWebsite
+      - EdgeSmokeFeatures
 
 # ──────────────────────────────────────────────────────────────────────────────
 # RISK ESCALATION

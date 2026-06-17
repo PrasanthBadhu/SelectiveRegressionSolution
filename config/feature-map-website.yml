@@ -19,13 +19,19 @@
 #   2. module    — top-level folder prefix match
 #   3. keyword   — PR title / body text match (case-insensitive)
 #
-# NOTE: Module names and sub-path prefixes are based on common Cobalt website
-#       folder conventions.  Run `git ls-tree HEAD --name-only` in tr/cobalt_website
-#       to confirm actual top-level folder names and adjust entries as needed.
+# Actual repo layout (verified via gh api repos/tr/cobalt_website/git/trees/HEAD):
+#   WestlawNext/          Core website — WestlawNext.Web/, ProductViews/, WLNDocument/
+#   App/                  Platform application — Website/, PlatformApplication/, Unit Tests/
+#   WestKM/               WestKM knowledge management module
+#   Analytics/            Analytics module
+#
+# Legacy placeholder module names (WLNWebsite, WLNWebsiteCommon, etc.) are retained
+# for backward compatibility; actual top-level folder modules (WestlawNext, WestKM,
+# App, Analytics) are added below with accurate sub_path entries.
 ################################################################################
 
-version: "2.0"
-last_updated: "2026-06-09"
+version: "3.0"
+last_updated: "2026-06-17"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # MODULE MAPPINGS  (key = top-level folder name in cobalt_website)
@@ -283,6 +289,116 @@ modules:
       - ExpertRelationships
       - EdgeSmokeFeatures
     risk_multiplier: low
+
+  # ── Actual top-level modules (verified from cobalt_website repo tree) ────────
+  WestlawNext:
+    description: "WestlawNext/ — primary website module (WestlawNext.Web/, ProductViews/)"
+    test_categories:
+      - CoreWebsite
+      - WebsiteCore1
+      - WebsiteCore2
+      - CoreSearch
+      - GlobalSearch
+      - CaseNotebook
+      - CaseNotebookUi
+      - CaseEvaluator
+      - WestlawSessionTimeOuts
+      - BasicQnA
+      - BillingTests
+      - ClientValidations
+      - ClientValidationsEdge
+      - ContinuousClient
+      - CopyCitationEdge_Regression
+      - CopyCitationWln_Regression
+      - DefendingThePremium
+      - EdgeCustomPageAdmin
+      - EdgeCustomPages
+      - FavoriteSearches
+      - FilterPanelUpdateEdge
+      - GlobalIpSmokeTransition
+      - HeaderRedesign
+      - HighQLinkEdge
+      - HighQLinkWln
+      - HomePageTour
+      - ImageEdgeSearch
+      - ImageSearch
+      - ImpliedOverrulings
+      - IndigoRetainDataAfterToggling
+      - IndigoTrdPage
+      - IndigoTrdTypeahead
+      - InternationalFind
+      - ItDepends
+      - MedicalLitigator
+      - MedicalLitigatorRegression
+      - MultipleSearchWithinTermNavigation
+      - NegativeHistory
+      - NextMissingTerms
+      - OpenWeb
+      - PageHeaderRedesign
+      - Patron
+      - PreviousInteractions
+      - ProceduralPosture
+      - PublicDomainCitationsEdge
+      - PublicDomainCitationsWln
+      - RepealedFacets
+      - SaveSnippet_Edge
+      - SearchEnhancements
+      - SearchTermEmphasis_Edge
+      - SecondarySources
+      - TrainingAndSupport
+      - Tray
+      - UIRefresh
+      - UIRefresh1
+      - WestlawEdgePreview
+      - WestlawTodayAlerts
+      - WlnCustomPage
+      - WlnCustomPageAdmin
+      - WlnPromotionBanner
+      - WlnRetainDataAfterToggling
+      - BLT2015
+      - CitingReferences
+      - Aug2025-Transition
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  WestKM:
+    description: "WestKM/ — West Key Number knowledge management module"
+    test_categories:
+      - WestKm
+      - CoreWebsite
+      - WebsiteCore1
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  App:
+    description: "App/ — platform application layer (Website, PlatformApplication, Unit Tests)"
+    test_categories:
+      - CoreWebsite
+      - WebsiteCore1
+      - WebsiteCore2
+      - BillingTests
+      - Patron
+      - UIRefresh
+      - UIRefresh1
+      - IndigoTrdPage
+      - IndigoRetainDataAfterToggling
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  Analytics:
+    description: "Analytics/ — website analytics module"
+    test_categories:
+      - WLAnalytics
+      - WLAnalyticsIndigo
+      - AnalyticsAlertsEnhancements
+      - LegalAnalyticsApi
+      - LitigationAnalytics
+      - TrdLegalAnalyticsUi
+      - TrdSmoke
+      - TrdApi
+      - TrdFacets
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
 
 # ──────────────────────────────────────────────────────────────────────────────
 # SUB-MODULE PATH MAPPINGS  (key = file path prefix, longest match wins)
@@ -644,6 +760,198 @@ sub_paths:
       - ResearchReportsDelivery
       - ResearchRecommendations1
       - ResearchRecommendations2
+      - EdgeSmokeFeatures
+
+  # ── Actual cobalt_website structure (verified from repo tree) ────────────────
+  "WestlawNext/WestlawNext.Web/CaseNotebook/":
+    product: WestlawNext
+    test_categories:
+      - CaseNotebook
+      - CaseNotebookUi
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/WestlawNext.Web/Session/":
+    product: WestlawNext
+    test_categories:
+      - WestlawSessionTimeOuts
+      - ClientValidations
+      - ClientValidationsEdge
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/WestlawNext.Web/DynamicQA/":
+    product: WestlawNext
+    test_categories:
+      - BasicQnA
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/WestlawNext.Web/IntellectualProperty/":
+    product: WestlawNext
+    test_categories:
+      - GlobalIpSmokeTransition
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/WestlawNext.Web/International/":
+    product: WestlawNext
+    test_categories:
+      - InternationalFind
+      - CoreSearch
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/WestlawNext.Web/Document/":
+    product: WestlawNext
+    test_categories:
+      - CopyCitationEdge_Regression
+      - CopyCitationWln_Regression
+      - SecondarySources
+      - Document
+      - DocDisplay
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/WestlawNext.Web/Browse/":
+    product: WestlawNext
+    test_categories:
+      - SecondarySources
+      - BrowsePageSearch
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/WestlawNext.Web/RelatedInformation/":
+    product: WestlawNext
+    test_categories:
+      - CitingReferences
+      - RelatedInfoContent
+      - RelatedInfoReferences
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/WestlawNext.Web/IndigoPremiumF1/":
+    product: WestlawNext
+    test_categories:
+      - IndigoTrdPage
+      - UIRefresh
+      - UIRefresh1
+      - IndigoRetainDataAfterToggling
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/WestlawNext.Web/GradingTool/":
+    product: WestlawNext
+    test_categories:
+      - ItDepends
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/WestlawNext.Web/Workflows/":
+    product: WestlawNext
+    test_categories:
+      - ImageSearch
+      - ImageEdgeSearch
+      - CoreSearch
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/WestlawNext.Web/Delivery/":
+    product: WestlawNext
+    test_categories:
+      - Patron
+      - WebsiteDelivery
+      - DOCX
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/WestlawNext.Web/KnowledgeGraph/":
+    product: WestlawNext
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/ProductViews/WLNOpenWeb/":
+    product: WestlawNext
+    test_categories:
+      - OpenWeb
+      - DefendingThePremium
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/ProductViews/WestlawToday/":
+    product: WestlawNext
+    test_categories:
+      - WestlawTodayAlerts
+      - OpenWeb
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/ProductViews/CaseNotebook/":
+    product: WestlawNext
+    test_categories:
+      - CaseNotebook
+      - CaseNotebookUi
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestlawNext/ProductViews/BusinessLaw/":
+    product: WestlawNext
+    test_categories:
+      - BLT2015
+      - BLCCommon
+      - Agreements
+      - BusinessLawTransition
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "App/Website/IndigoPremiumF1/":
+    product: WestlawNext
+    test_categories:
+      - IndigoTrdPage
+      - UIRefresh
+      - UIRefresh1
+      - IndigoRetainDataAfterToggling
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "App/PlatformApplication/Billing/":
+    product: App
+    test_categories:
+      - BillingTests
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "App/PlatformApplication/Delivery/":
+    product: App
+    test_categories:
+      - Patron
+      - WebsiteDelivery
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "WestKM/":
+    product: WestKM
+    test_categories:
+      - WestKm
+      - CoreWebsite
+      - WebsiteCore1
+      - EdgeSmokeFeatures
+
+  "Analytics/":
+    product: Analytics
+    test_categories:
+      - WLAnalytics
+      - WLAnalyticsIndigo
+      - AnalyticsAlertsEnhancements
+      - LegalAnalyticsApi
+      - LitigationAnalytics
+      - TrdLegalAnalyticsUi
+      - TrdSmoke
+      - TrdApi
+      - TrdFacets
       - EdgeSmokeFeatures
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -1023,6 +1331,436 @@ keywords:
     test_categories:
       - Search4KUiIndigo
       - Search4KUiWln
+
+  # ── New keywords for previously unmapped test categories ─────────────────────
+  "case notebook":
+    product: WestlawNext
+    test_categories:
+      - CaseNotebook
+      - CaseNotebookUi
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "case evaluator":
+    product: WestlawNext
+    test_categories:
+      - CaseEvaluator
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  billing:
+    product: App
+    test_categories:
+      - BillingTests
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  patron:
+    product: App
+    test_categories:
+      - Patron
+      - WebsiteDelivery
+      - EdgeSmokeFeatures
+
+  tray:
+    product: WestlawNext
+    test_categories:
+      - Tray
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "training and support":
+    product: WestlawNext
+    test_categories:
+      - TrainingAndSupport
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  training:
+    product: WestlawNext
+    test_categories:
+      - TrainingAndSupport
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "ui refresh":
+    product: WestlawNext
+    test_categories:
+      - UIRefresh
+      - UIRefresh1
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "westlaw edge preview":
+    product: WestlawNext
+    test_categories:
+      - WestlawEdgePreview
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "session timeout":
+    product: WestlawNext
+    test_categories:
+      - WestlawSessionTimeOuts
+      - ClientValidations
+      - EdgeSmokeFeatures
+
+  "client validation":
+    product: WestlawNext
+    test_categories:
+      - ClientValidations
+      - ClientValidationsEdge
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "continuous client":
+    product: WestlawNext
+    test_categories:
+      - ContinuousClient
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "copy citation":
+    product: Document
+    test_categories:
+      - CopyCitationEdge_Regression
+      - CopyCitationWln_Regression
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  "defending the premium":
+    product: WestlawNext
+    test_categories:
+      - DefendingThePremium
+      - OpenWeb
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "open web":
+    product: WestlawNext
+    test_categories:
+      - OpenWeb
+      - DefendingThePremium
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "custom page admin":
+    product: WestlawNext
+    test_categories:
+      - EdgeCustomPageAdmin
+      - WlnCustomPageAdmin
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "custom page sharing":
+    product: WestlawNext
+    test_categories:
+      - WlnCustomPage
+      - WlnCustomPageAdmin
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "favorite search":
+    product: WestlawNext
+    test_categories:
+      - FavoriteSearches
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "global ip":
+    product: WestlawNext
+    test_categories:
+      - GlobalIpSmokeTransition
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "header redesign":
+    product: WestlawNext
+    test_categories:
+      - HeaderRedesign
+      - PageHeaderRedesign
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "page header":
+    product: WestlawNext
+    test_categories:
+      - PageHeaderRedesign
+      - HeaderRedesign
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  highq:
+    product: WestlawNext
+    test_categories:
+      - HighQLinkEdge
+      - HighQLinkWln
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "homepage tour":
+    product: WestlawNext
+    test_categories:
+      - HomePageTour
+      - HomePage
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "image search":
+    product: WestlawNext
+    test_categories:
+      - ImageSearch
+      - ImageEdgeSearch
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "indigo retain":
+    product: WestlawNext
+    test_categories:
+      - IndigoRetainDataAfterToggling
+      - WlnRetainDataAfterToggling
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "trd page":
+    product: WestlawNext
+    test_categories:
+      - IndigoTrdPage
+      - TrdSmoke
+      - TrdApi
+      - TrdFacets
+      - EdgeSmokeFeatures
+
+  "trd typeahead":
+    product: WestlawNext
+    test_categories:
+      - IndigoTrdTypeahead
+      - IndigoTrdPage
+      - TrdSmoke
+      - EdgeSmokeFeatures
+
+  international:
+    product: WestlawNext
+    test_categories:
+      - InternationalFind
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "it depends":
+    product: WestlawNext
+    test_categories:
+      - ItDepends
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  medical:
+    product: WestlawNext
+    test_categories:
+      - MedicalLitigator
+      - MedicalLitigatorRegression
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "medical litigator":
+    product: WestlawNext
+    test_categories:
+      - MedicalLitigator
+      - MedicalLitigatorRegression
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "search within":
+    product: Search
+    test_categories:
+      - MultipleSearchWithinTermNavigation
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  "negative history":
+    product: Search
+    test_categories:
+      - NegativeHistory
+      - RelatedInfoFlags
+      - EdgeSmokeFeatures
+
+  "missing terms":
+    product: Search
+    test_categories:
+      - NextMissingTerms
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "previous user":
+    product: WestlawNext
+    test_categories:
+      - PreviousInteractions
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "public domain":
+    product: Document
+    test_categories:
+      - PublicDomainCitationsEdge
+      - PublicDomainCitationsWln
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  "repealed":
+    product: Search
+    test_categories:
+      - RepealedFacets
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "save snippet":
+    product: Document
+    test_categories:
+      - SaveSnippet_Edge
+      - Document
+      - EdgeSmokeFeatures
+
+  "secondary source":
+    product: WestlawNext
+    test_categories:
+      - SecondarySources
+      - CoreSearch
+      - BrowsePageSearch
+      - EdgeSmokeFeatures
+
+  "search enhancement":
+    product: Search
+    test_categories:
+      - SearchEnhancements
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  "term emphasis":
+    product: Search
+    test_categories:
+      - SearchTermEmphasis_Edge
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "filter panel":
+    product: Search
+    test_categories:
+      - FilterPanelUpdateEdge
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "implied overruling":
+    product: Search
+    test_categories:
+      - ImpliedOverrulings
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "westkm":
+    product: WestKM
+    test_categories:
+      - WestKm
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "west km":
+    product: WestKM
+    test_categories:
+      - WestKm
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "westlaw today":
+    product: WestlawToday
+    test_categories:
+      - WestlawTodayAlerts
+      - OpenWeb
+      - EdgeSmokeFeatures
+
+  "promotion banner":
+    product: WestlawNext
+    test_categories:
+      - WlnPromotionBanner
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "retain data":
+    product: WestlawNext
+    test_categories:
+      - WlnRetainDataAfterToggling
+      - IndigoRetainDataAfterToggling
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "basic qna":
+    product: WestlawNext
+    test_categories:
+      - BasicQnA
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "q&a":
+    product: WestlawNext
+    test_categories:
+      - BasicQnA
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  blt2015:
+    product: WestlawNext
+    test_categories:
+      - BLT2015
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "aug 2025":
+    product: AUNZ
+    test_categories:
+      - Aug2025-Transition
+      - AnzEdgeRegression
+      - AnzWebsite
+      - EdgeSmokeFeatures
+
+  "bau stories":
+    product: AUNZ
+    test_categories:
+      - Aug2025-Transition
+      - AnzEdgeRegression
+      - AnzWebsite
+      - EdgeSmokeFeatures
+
+  "citing reference":
+    product: RelatedInfo
+    test_categories:
+      - CitingReferences
+      - RelatedInfoReferences
+      - RelatedInfoContent
+      - EdgeSmokeFeatures
+
+  "custom digest":
+    product: Search
+    test_categories:
+      - CustomDigestSearch
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "gold report":
+    product: Search
+    test_categories:
+      - GoldReportQuery
+      - GoldReportQuery2
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  "procedural posture":
+    product: Canada
+    test_categories:
+      - ProceduralPosture
+      - CanadaDocDisplay
+      - DocumentMisc
+      - EdgeSmokeFeatures
 
 # ──────────────────────────────────────────────────────────────────────────────
 # CHANGE-TYPE RULES
