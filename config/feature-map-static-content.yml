@@ -699,7 +699,6 @@ sub_paths:
       - VersionsCompare
       - TCOSectionEdge
       - TCOSectionWln
-      - HotDocs
       - CitingReferences
       - PublicDomainCitationsEdge
       - PublicDomainCitationsWln
@@ -1318,18 +1317,6 @@ keywords:
     test_categories:
       - VersionsCompare
       - SnippetCompare
-      - EdgeSmokeFeatures
-
-  hotdocs:
-    product: Document
-    test_categories:
-      - HotDocs
-      - EdgeSmokeFeatures
-
-  "hot docs":
-    product: Document
-    test_categories:
-      - HotDocs
       - EdgeSmokeFeatures
 
   snippet:

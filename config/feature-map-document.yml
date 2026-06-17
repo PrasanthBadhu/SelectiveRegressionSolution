@@ -79,7 +79,6 @@ modules:
       - RelatedInfoDelivery
       - CoreSearch
       - GlobalSearch
-      - HotDocs
       - TCOSectionWln
       - ToC
       - FocusHighlighting
@@ -260,7 +259,6 @@ sub_paths:
       - RelatedInfoDelivery
       - CoreSearch
       - GlobalSearch
-      - HotDocs
       - VersionsCompare
       - SnippetCompare
       - SnippetNav
@@ -608,22 +606,6 @@ keywords:
       - SnippetNav
       - Document
       - DocDisplay
-      - EdgeSmokeFeatures
-
-  hotdocs:
-    product: Document
-    test_categories:
-      - HotDocs
-      - DocDisplay
-      - Document
-      - EdgeSmokeFeatures
-
-  "hot docs":
-    product: Document
-    test_categories:
-      - HotDocs
-      - DocDisplay
-      - Document
       - EdgeSmokeFeatures
 
   "citing reference":
