@@ -84,6 +84,18 @@ repos:
     test_environment:   DEMO
     lookback_days:      7
 
+  # ── Alert repository ─────────────────────────────────────────────────────────
+  - name:               cobalt_alert
+    full_name:          tr/cobalt_alert
+    enabled:            true
+    description:        "Cobalt Alert — alert processing, event listening, product alert modules"
+    read_token_secret:  COBALT_READ_TOKEN
+    feature_map_repo:   tr/Seven-Kingdoms
+    feature_map_path:   feature-map-alert.yml
+    feature_map_local:  "config/feature-map-alert.yml"
+    test_environment:   DEMO
+    lookback_days:      7
+
   # ── Template for future repositories ────────────────────────────────────────
   # - name:               cobalt_documents
   #   full_name:          tr/cobalt_documents

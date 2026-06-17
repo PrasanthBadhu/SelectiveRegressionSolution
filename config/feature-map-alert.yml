@@ -1,0 +1,574 @@
+################################################################################
+# feature-map-alert.yml
+# Location: config/feature-map-alert.yml
+#
+# Purpose:
+#   Maps tr/cobalt_alert file paths / keywords to TestCategory names.
+#   TestCategory names match @SET CATEGORY_NAME=TestCategory=<name> in
+#   config/dotnet/**/*.bat files in tr/CobaltRegressionTesting.
+#
+# Mapping chain:
+#   cobalt_alert changed files
+#     -> module / sub_path / keyword
+#       -> test_categories (this file)
+#         -> bat files with CATEGORY_NAME=TestCategory=<name>
+#           -> WL_DNet_*.yml workflows
+#
+# Priority order (highest wins):
+#   1. sub_path  — longest prefix match on the changed file path
+#   2. module    — top-level folder prefix match
+#   3. keyword   — PR title / body text match (case-insensitive)
+#
+# Repo layout (verified via git ls-tree HEAD --name-only in tr/cobalt_alert):
+#   Alert/                  Core alert framework (shared by all products)
+#   AlertCommon/            Shared alert utilities and base classes
+#   AlertEventListener/     Event processing and listener infrastructure
+#   AlertProcessor/         Core alert processing engine
+#   AlertProductService/    Product service layer (REST endpoints)
+#   AlertSerialized/        Alert data serialization / deserialization
+#   AlertStatsListener/     Alert statistics tracking
+#   AlertVeracode/          Security scanning integration
+#   AnalyticsAlert/         Analytics-specific alert module
+#   CarswellAlert/          Carswell / LN Canada alert module
+#   ClassifierProcessor/    Alert classification logic
+#   JudicialPracticeAlert/  Judicial practice alert module
+#   PubProducerMaintainer/  Publisher / producer maintenance
+#   SLWBAlert/              SLWB alert module
+#   TNPCarswellAlert/       Thomson Newspapers Platform / Carswell alert module
+#   WFBAlert/               WFB alert module
+#   WLNAlert/               Westlaw Next alert module
+#   Config/                 Configuration management
+#   LoggingConfig/          Logging configuration
+################################################################################
+
+version: "1.0"
+last_updated: "2026-06-17"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# MODULE MAPPINGS  (key = top-level folder name in cobalt_alert)
+# Prefix match: any file whose path starts with "<key>/" maps here.
+# risk_multiplier: high | medium | low
+# ──────────────────────────────────────────────────────────────────────────────
+modules:
+
+  Alert:
+    description: "Core alert framework — shared across all products"
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - Alerts
+      - AlertsAdmin
+      - CapitolWatch
+      - AnzAlerts
+      - AnalyticsAlertsEnhancements
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  AlertCommon:
+    description: "Shared alert utilities — base classes, common models"
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - Alerts
+      - AlertsAdmin
+      - CapitolWatch
+      - AnzAlerts
+      - AnalyticsAlertsEnhancements
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  AlertProcessor:
+    description: "Core alert processing engine — creates and dispatches alert events"
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - Alerts
+      - AlertsAdmin
+      - CapitolWatch
+      - AnzAlerts
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  AlertEventListener:
+    description: "Event listener infrastructure — receives and routes alert events"
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - Alerts
+      - AlertsAdmin
+      - AnzAlerts
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  AlertProductService:
+    description: "Product service layer — REST endpoints for alert CRUD operations"
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - Alerts
+      - AlertsAdmin
+      - CapitolWatch
+      - AnzAlerts
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  AlertSerialized:
+    description: "Alert data serialization / deserialization"
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - AlertsAdmin
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  AlertStatsListener:
+    description: "Alert statistics tracking and reporting"
+    test_categories:
+      - AlertAccess
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  AlertVeracode:
+    description: "Security scanning integration — no direct test category triggers"
+    test_categories:
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  AnalyticsAlert:
+    description: "Analytics-specific alert module"
+    test_categories:
+      - AnalyticsAlertsEnhancements
+      - AlertAccess
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  CarswellAlert:
+    description: "Carswell / LN Canada alert module"
+    test_categories:
+      - Alerts
+      - AlertsAdmin
+      - AlertAccess
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  ClassifierProcessor:
+    description: "Alert classification logic — categorises incoming alert events"
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  JudicialPracticeAlert:
+    description: "Judicial practice alert module"
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  PubProducerMaintainer:
+    description: "Publisher / producer maintenance — alert feed infrastructure"
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  SLWBAlert:
+    description: "SLWB alert module"
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  TNPCarswellAlert:
+    description: "Thomson Newspapers Platform / Carswell alert module"
+    test_categories:
+      - Alerts
+      - AlertAccess
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  WFBAlert:
+    description: "WFB alert module"
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  WLNAlert:
+    description: "Westlaw Next alert module"
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - Alerts
+      - AlertsAdmin
+      - CapitolWatch
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  Config:
+    description: "Alert configuration management"
+    test_categories:
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  LoggingConfig:
+    description: "Logging configuration — no direct test category triggers"
+    test_categories:
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+# ──────────────────────────────────────────────────────────────────────────────
+# SUB-MODULE PATH MAPPINGS  (key = file path prefix, longest match wins)
+# Priority 1 (highest).  Pattern: <Module>/src/  or  <Module>/<Sub>/
+# ──────────────────────────────────────────────────────────────────────────────
+sub_paths:
+
+  # ── Core alert framework ─────────────────────────────────────────────────────
+  "Alert/src/":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - Alerts
+      - AlertsAdmin
+      - CapitolWatch
+      - AnzAlerts
+      - AnalyticsAlertsEnhancements
+      - EdgeSmokeFeatures
+
+  "Alert/WebContent/":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - Alerts
+      - AlertsAdmin
+      - EdgeSmokeFeatures
+
+  "Alert/IntegrationTests/":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  # ── Alert Common ─────────────────────────────────────────────────────────────
+  "AlertCommon/src/":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - Alerts
+      - AlertsAdmin
+      - CapitolWatch
+      - AnzAlerts
+      - AnalyticsAlertsEnhancements
+      - EdgeSmokeFeatures
+
+  # ── Alert Processor ──────────────────────────────────────────────────────────
+  "AlertProcessor/src/":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - Alerts
+      - AlertsAdmin
+      - CapitolWatch
+      - AnzAlerts
+      - EdgeSmokeFeatures
+
+  "AlertProcessor/integration/":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  # ── Alert Event Listener ─────────────────────────────────────────────────────
+  "AlertEventListener/src/":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - Alerts
+      - AlertsAdmin
+      - AnzAlerts
+      - EdgeSmokeFeatures
+
+  # ── Alert Product Service ────────────────────────────────────────────────────
+  "AlertProductService/src/":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - Alerts
+      - AlertsAdmin
+      - CapitolWatch
+      - AnzAlerts
+      - EdgeSmokeFeatures
+
+  # ── Alert Serialized ─────────────────────────────────────────────────────────
+  "AlertSerialized/src/":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - AlertsAdmin
+      - EdgeSmokeFeatures
+
+  # ── Analytics Alert ──────────────────────────────────────────────────────────
+  "AnalyticsAlert/src/":
+    product: Analytics
+    test_categories:
+      - AnalyticsAlertsEnhancements
+      - AlertAccess
+      - EdgeSmokeFeatures
+
+  # ── Carswell Alert ───────────────────────────────────────────────────────────
+  "CarswellAlert/src/":
+    product: Canada
+    test_categories:
+      - Alerts
+      - AlertsAdmin
+      - AlertAccess
+      - EdgeSmokeFeatures
+
+  # ── TNP Carswell Alert ───────────────────────────────────────────────────────
+  "TNPCarswellAlert/src/":
+    product: Canada
+    test_categories:
+      - Alerts
+      - AlertAccess
+      - EdgeSmokeFeatures
+
+  # ── Classifier Processor ─────────────────────────────────────────────────────
+  "ClassifierProcessor/src/":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  # ── Judicial Practice Alert ──────────────────────────────────────────────────
+  "JudicialPracticeAlert/src/":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  # ── SLWB Alert ───────────────────────────────────────────────────────────────
+  "SLWBAlert/src/":
+    product: SLWB
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  # ── WFB Alert ────────────────────────────────────────────────────────────────
+  "WFBAlert/src/":
+    product: WFB
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  # ── WLN Alert ────────────────────────────────────────────────────────────────
+  "WLNAlert/src/":
+    product: WestlawNext
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - Alerts
+      - AlertsAdmin
+      - CapitolWatch
+      - EdgeSmokeFeatures
+
+  "WLNAlert/EndpointTests/":
+    product: WestlawNext
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  # ── Publisher / Producer Maintainer ──────────────────────────────────────────
+  "PubProducerMaintainer/src/":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+# ──────────────────────────────────────────────────────────────────────────────
+# KEYWORD MAPPINGS  (matched against PR title + body, case-insensitive)
+# Priority 3 (lowest — fires when no module or sub_path match is found).
+# ──────────────────────────────────────────────────────────────────────────────
+keywords:
+
+  alert:
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - Alerts
+      - AlertsAdmin
+      - EdgeSmokeFeatures
+
+  alerts:
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - AlertsMobile
+      - Alerts
+      - AlertsAdmin
+      - CapitolWatch
+      - AnzAlerts
+      - EdgeSmokeFeatures
+
+  "alert access":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - EdgeSmokeFeatures
+
+  "capitol watch":
+    product: Alerts
+    test_categories:
+      - CapitolWatch
+      - AlertAccess
+      - EdgeSmokeFeatures
+
+  "mobile alert":
+    product: Alerts
+    test_categories:
+      - AlertsMobile
+      - AlertAccess
+      - EdgeSmokeFeatures
+
+  subscription:
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - AlertsAdmin
+      - EdgeSmokeFeatures
+
+  notification:
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  "analytics alert":
+    product: Analytics
+    test_categories:
+      - AnalyticsAlertsEnhancements
+      - AlertAccess
+      - EdgeSmokeFeatures
+
+  "alert analytics":
+    product: Analytics
+    test_categories:
+      - AnalyticsAlertsEnhancements
+      - AlertAccess
+      - EdgeSmokeFeatures
+
+  analytics:
+    product: Analytics
+    test_categories:
+      - AnalyticsAlertsEnhancements
+      - EdgeSmokeFeatures
+
+  aunz:
+    product: AUNZ
+    test_categories:
+      - AnzAlerts
+      - AlertAccess
+      - EdgeSmokeFeatures
+
+  anz:
+    product: AUNZ
+    test_categories:
+      - AnzAlerts
+      - AlertAccess
+      - EdgeSmokeFeatures
+
+  canada:
+    product: Canada
+    test_categories:
+      - Alerts
+      - AlertsAdmin
+      - AlertAccess
+      - EdgeSmokeFeatures
+
+  carswell:
+    product: Canada
+    test_categories:
+      - Alerts
+      - AlertsAdmin
+      - AlertAccess
+      - EdgeSmokeFeatures
+
+  "judicial practice":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  classifier:
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  processor:
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - AlertsAdmin
+      - EdgeSmokeFeatures
+
+  serialization:
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  "event listener":
+    product: Alerts
+    test_categories:
+      - AlertAccess
+      - Alerts
+      - AlertsAdmin
+      - EdgeSmokeFeatures
+
+# ──────────────────────────────────────────────────────────────────────────────
+# CHANGE-TYPE RULES
+# ──────────────────────────────────────────────────────────────────────────────
+change_type_rules:
+  docs:
+    skip_all: true
+  chore:
+    test_categories_override:
+      - EdgeSmokeFeatures
+  test:
+    skip_integration: true
+
+# ──────────────────────────────────────────────────────────────────────────────
+# HIGH-RISK ALWAYS-ADD  (appended when risk_level == high)
+# ──────────────────────────────────────────────────────────────────────────────
+high_risk_always_add:
+  test_categories:
+    - AlertAccess
+    - Alerts
+    - EdgeSmokeFeatures
