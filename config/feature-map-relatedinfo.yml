@@ -1,0 +1,508 @@
+################################################################################
+# feature-map-relatedinfo.yml
+# Location: config/feature-map-relatedinfo.yml
+#
+# Purpose:
+#   Maps tr/cobalt_relatedinfo file paths / keywords to TestCategory names.
+#   TestCategory names match @SET CATEGORY_NAME=TestCategory=<name> in
+#   config/dotnet/**/*.bat files in tr/CobaltRegressionTesting.
+#
+# Mapping chain:
+#   cobalt_relatedinfo changed files
+#     -> module / sub_path / keyword
+#       -> test_categories (this file)
+#         -> bat files with CATEGORY_NAME=TestCategory=<name>
+#           -> WL_DNet_*.yml workflows
+#
+# Priority order (highest wins):
+#   1. sub_path  — longest prefix match on the changed file path
+#   2. module    — top-level folder prefix match
+#   3. keyword   — PR title / body text match (case-insensitive)
+#
+# Repo layout (verified via git ls-tree HEAD --name-only in tr/cobalt_relatedinfo):
+#   RelatedInfo/              Core related info module (shared by all products)
+#   RelatedInfoConfig/        Configuration and manifest management
+#   RelatedInfoSerialized/    Serialization / deserialization layer
+#   AccelusRelatedInfo/       Accelus product related info module
+#   CarswellRelatedInfo/      Carswell / LN Canada related info module
+#   CorrectionalRelatedInfo/  Correctional law related info module
+#   DraftingRelatedInfo/      Legislative drafting related info module
+#   SlwbRelatedInfo/          SLWB related info module
+#   TNPCarswellRelatedInfo/   Thomson Newspapers Platform / Carswell related info module
+#   WLNRelatedInfo/           Westlaw Next related info module
+#   WestKMRelatedInfo/        West Key Number related info module
+################################################################################
+
+version: "1.0"
+last_updated: "2026-06-17"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# MODULE MAPPINGS  (key = top-level folder name in cobalt_relatedinfo)
+# Prefix match: any file whose path starts with "<key>/" maps here.
+# risk_multiplier: high | medium | low
+# ──────────────────────────────────────────────────────────────────────────────
+modules:
+
+  RelatedInfo:
+    description: "Core related info module — shared pipeline, content, flags, delivery"
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoKeyciteCommand
+      - RelatedInfoIpTools
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - RelatedInfoReferences
+      - FolderAnalysisKeyCite
+      - GraphicalHistory
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  RelatedInfoConfig:
+    description: "Configuration and manifest management — no direct product impact"
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoMiscellaneous
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  RelatedInfoSerialized:
+    description: "Related info serialization / deserialization layer"
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - RelatedInfoReferences
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  WLNRelatedInfo:
+    description: "Westlaw Next related info module"
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoKeyciteCommand
+      - RelatedInfoIpTools
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - RelatedInfoReferences
+      - FolderAnalysisKeyCite
+      - GraphicalHistory
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  AccelusRelatedInfo:
+    description: "Accelus product related info module"
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  CarswellRelatedInfo:
+    description: "Carswell / LN Canada related info module"
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  WestKMRelatedInfo:
+    description: "West Key Number related info module — keycite flags and history"
+    test_categories:
+      - RelatedInfoKeyciteCommand
+      - RelatedInfoFlags
+      - RelatedInfoContent
+      - RelatedInfoReferences
+      - FolderAnalysisKeyCite
+      - GraphicalHistory
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  CorrectionalRelatedInfo:
+    description: "Correctional law related info module"
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  DraftingRelatedInfo:
+    description: "Legislative drafting related info module"
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  SlwbRelatedInfo:
+    description: "SLWB related info module"
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  TNPCarswellRelatedInfo:
+    description: "Thomson Newspapers Platform / Carswell related info module"
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+# ──────────────────────────────────────────────────────────────────────────────
+# SUB-MODULE PATH MAPPINGS  (key = file path prefix, longest match wins)
+# Priority 1 (highest).  Pattern: <Module>/src/  or  <Module>/<Sub>/
+# ──────────────────────────────────────────────────────────────────────────────
+sub_paths:
+
+  # ── Core related info ────────────────────────────────────────────────────────
+  "RelatedInfo/src/":
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoKeyciteCommand
+      - RelatedInfoIpTools
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - RelatedInfoReferences
+      - FolderAnalysisKeyCite
+      - GraphicalHistory
+      - EdgeSmokeFeatures
+
+  "RelatedInfo/GraphicalKeyciteTests/":
+    product: RelatedInfo
+    test_categories:
+      - GraphicalHistory
+      - RelatedInfoKeyciteCommand
+      - FolderAnalysisKeyCite
+      - EdgeSmokeFeatures
+
+  "RelatedInfo/IntegrationTests/":
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - EdgeSmokeFeatures
+
+  "RelatedInfo/EndpointTests/":
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoTabs
+      - EdgeSmokeFeatures
+
+  # ── Related Info Serialized ──────────────────────────────────────────────────
+  "RelatedInfoSerialized/src/":
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - RelatedInfoReferences
+      - EdgeSmokeFeatures
+
+  # ── WLN Related Info ─────────────────────────────────────────────────────────
+  "WLNRelatedInfo/src/":
+    product: WestlawNext
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoKeyciteCommand
+      - RelatedInfoIpTools
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - RelatedInfoReferences
+      - FolderAnalysisKeyCite
+      - GraphicalHistory
+      - EdgeSmokeFeatures
+
+  "WLNRelatedInfo/EndpointTests/":
+    product: WestlawNext
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoTabs
+      - EdgeSmokeFeatures
+
+  "WLNRelatedInfo/IntegrationTests/":
+    product: WestlawNext
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - EdgeSmokeFeatures
+
+  # ── West KM Related Info ─────────────────────────────────────────────────────
+  "WestKMRelatedInfo/src/":
+    product: WestKM
+    test_categories:
+      - RelatedInfoKeyciteCommand
+      - RelatedInfoFlags
+      - RelatedInfoContent
+      - RelatedInfoReferences
+      - FolderAnalysisKeyCite
+      - GraphicalHistory
+      - EdgeSmokeFeatures
+
+  # ── Accelus Related Info ─────────────────────────────────────────────────────
+  "AccelusRelatedInfo/src/":
+    product: Accelus
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - EdgeSmokeFeatures
+
+  # ── Carswell Related Info ────────────────────────────────────────────────────
+  "CarswellRelatedInfo/src/":
+    product: Canada
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - EdgeSmokeFeatures
+
+  # ── TNP Carswell Related Info ────────────────────────────────────────────────
+  "TNPCarswellRelatedInfo/src/":
+    product: Canada
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - EdgeSmokeFeatures
+
+  # ── Correctional Related Info ────────────────────────────────────────────────
+  "CorrectionalRelatedInfo/src/":
+    product: Correctional
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - EdgeSmokeFeatures
+
+  # ── Drafting Related Info ────────────────────────────────────────────────────
+  "DraftingRelatedInfo/src/":
+    product: Drafting
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - EdgeSmokeFeatures
+
+  # ── SLWB Related Info ────────────────────────────────────────────────────────
+  "SlwbRelatedInfo/src/":
+    product: SLWB
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - EdgeSmokeFeatures
+
+# ──────────────────────────────────────────────────────────────────────────────
+# KEYWORD MAPPINGS  (matched against PR title + body, case-insensitive)
+# Priority 3 (lowest — fires when no module or sub_path match is found).
+# ──────────────────────────────────────────────────────────────────────────────
+keywords:
+
+  "related info":
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoKeyciteCommand
+      - RelatedInfoIpTools
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - RelatedInfoReferences
+      - EdgeSmokeFeatures
+
+  relatedinfo:
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoFlags
+      - RelatedInfoKeyciteCommand
+      - RelatedInfoTabs
+      - RelatedInfoMiscellaneous
+      - RelatedInfoReferences
+      - EdgeSmokeFeatures
+
+  keycite:
+    product: KeyCite
+    test_categories:
+      - RelatedInfoKeyciteCommand
+      - RelatedInfoFlags
+      - FolderAnalysisKeyCite
+      - GraphicalHistory
+      - EdgeSmokeFeatures
+
+  "key cite":
+    product: KeyCite
+    test_categories:
+      - RelatedInfoKeyciteCommand
+      - RelatedInfoFlags
+      - FolderAnalysisKeyCite
+      - EdgeSmokeFeatures
+
+  "graphical history":
+    product: KeyCite
+    test_categories:
+      - GraphicalHistory
+      - RelatedInfoKeyciteCommand
+      - FolderAnalysisKeyCite
+      - EdgeSmokeFeatures
+
+  "graphical keycite":
+    product: KeyCite
+    test_categories:
+      - GraphicalHistory
+      - RelatedInfoKeyciteCommand
+      - FolderAnalysisKeyCite
+      - EdgeSmokeFeatures
+
+  "ip tools":
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoIpTools
+      - RelatedInfoContent
+      - EdgeSmokeFeatures
+
+  "citing references":
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoReferences
+      - RelatedInfoContent
+      - EdgeSmokeFeatures
+
+  delivery:
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoDelivery
+      - RelatedInfoContent
+      - EdgeSmokeFeatures
+
+  facets:
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoFacets
+      - RelatedInfoContent
+      - EdgeSmokeFeatures
+
+  flags:
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoFlags
+      - RelatedInfoKeyciteCommand
+      - EdgeSmokeFeatures
+
+  "negative treatment":
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoFlags
+      - RelatedInfoKeyciteCommand
+      - EdgeSmokeFeatures
+
+  serialization:
+    product: RelatedInfo
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - EdgeSmokeFeatures
+
+  canada:
+    product: Canada
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoTabs
+      - EdgeSmokeFeatures
+
+  carswell:
+    product: Canada
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - RelatedInfoFacets
+      - RelatedInfoTabs
+      - EdgeSmokeFeatures
+
+  correctional:
+    product: Correctional
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoTabs
+      - EdgeSmokeFeatures
+
+  drafting:
+    product: Drafting
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoTabs
+      - EdgeSmokeFeatures
+
+  accelus:
+    product: Accelus
+    test_categories:
+      - RelatedInfoContent
+      - RelatedInfoTabs
+      - EdgeSmokeFeatures
+
+# ──────────────────────────────────────────────────────────────────────────────
+# CHANGE-TYPE RULES
+# ──────────────────────────────────────────────────────────────────────────────
+change_type_rules:
+  docs:
+    skip_all: true
+  chore:
+    test_categories_override:
+      - EdgeSmokeFeatures
+  test:
+    skip_integration: true
+
+# ──────────────────────────────────────────────────────────────────────────────
+# HIGH-RISK ALWAYS-ADD  (appended when risk_level == high)
+# ──────────────────────────────────────────────────────────────────────────────
+high_risk_always_add:
+  test_categories:
+    - RelatedInfoContent
+    - RelatedInfoDelivery
+    - RelatedInfoFlags
+    - EdgeSmokeFeatures

@@ -108,6 +108,18 @@ repos:
     test_environment:   DEMO
     lookback_days:      7
 
+  # ── Related Info repository ──────────────────────────────────────────────────
+  - name:               cobalt_relatedinfo
+    full_name:          tr/cobalt_relatedinfo
+    enabled:            true
+    description:        "Cobalt Related Info — KeyCite, graphical history, citations, IP tools"
+    read_token_secret:  COBALT_READ_TOKEN
+    feature_map_repo:   tr/Seven-Kingdoms
+    feature_map_path:   feature-map-relatedinfo.yml
+    feature_map_local:  "config/feature-map-relatedinfo.yml"
+    test_environment:   DEMO
+    lookback_days:      7
+
   # ── Template for future repositories ────────────────────────────────────────
   # - name:               cobalt_documents
   #   full_name:          tr/cobalt_documents
