@@ -45,11 +45,6 @@ on:
         required: false
         type: string
         default: ""
-      hours_back:
-        description: "Hours back to scan(e.g. 24, 48, 72)"
-        required: false
-        type: string
-        default: ""
       date_from:
         description: "Date range start — PRs created on/after (YYYY-MM-DD). Ignored if PR number(s) given."
         required: false
@@ -116,7 +111,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.COBALT_READ_TOKEN }}
           PR_NUMBERS:   ${{ inputs.pr_numbers }}
           SCAN_DATE:    ${{ inputs.scan_date }}
-          HOURS_BACK:   ${{ inputs.hours_back }}
           DATE_FROM:    ${{ inputs.date_from }}
           DATE_TO:      ${{ inputs.date_to }}
           STATE:        ${{ inputs.state }}
@@ -135,28 +129,26 @@ jobs:
           registry     = yaml.safe_load(Path("config/repo-registry.yml").read_text())
           enabled_repos = [r for r in registry.get("repos", []) if r.get("enabled")]
 
-          pr_numbers_raw = os.environ.get("PR_NUMBERS", "").strip()
-          scan_date_raw  = os.environ.get("SCAN_DATE",  "").strip()
-          hours_back_raw = os.environ.get("HOURS_BACK", "").strip()
-          date_from_raw  = os.environ.get("DATE_FROM",  "").strip()
-          date_to_raw    = os.environ.get("DATE_TO",    "").strip()
-          state_filter   = os.environ.get("STATE", "merged").strip().lower()
+          pr_numbers_raw  = os.environ.get("PR_NUMBERS", "").strip()
+          scan_date_raw   = os.environ.get("SCAN_DATE",  "").strip()
+          date_from_raw   = os.environ.get("DATE_FROM",  "").strip()
+          date_to_raw     = os.environ.get("DATE_TO",    "").strip()
+          state_filter    = os.environ.get("STATE", "merged").strip().lower()
 
-          date_from = None
-          date_to   = None
+          date_from       = None
+          date_to         = None
+          using_scan_date = False
           if not pr_numbers_raw:
               if scan_date_raw:
-                  date_from_raw = scan_date_raw
-                  date_to_raw   = scan_date_raw
-                  print(f"  scan_date={scan_date_raw}: scanning PRs merged on {scan_date_raw}",
-                        file=sys.stderr)
-              if hours_back_raw and hours_back_raw.isdigit() and int(hours_back_raw) > 0 and not scan_date_raw:
-                  _h = int(hours_back_raw)
-                  date_to   = datetime.now(timezone.utc)
-                  date_from = date_to - timedelta(hours=_h)
-                  date_from_raw = date_from.strftime("%Y-%m-%d")
-                  date_to_raw   = date_to.strftime("%Y-%m-%d")
-                  print(f"  hours_back={_h}: {date_from.isoformat()} → {date_to.isoformat()}",
+                  # Exact UTC day — midnight to 23:59:59, no IST 1-day extension
+                  date_from       = datetime.strptime(scan_date_raw, "%Y-%m-%d").replace(
+                                        hour=0, minute=0, second=0, tzinfo=timezone.utc)
+                  date_to         = datetime.strptime(scan_date_raw, "%Y-%m-%d").replace(
+                                        hour=23, minute=59, second=59, tzinfo=timezone.utc)
+                  date_from_raw   = scan_date_raw
+                  date_to_raw     = scan_date_raw
+                  using_scan_date = True
+                  print(f"  scan_date={scan_date_raw}: {date_from.isoformat()} → {date_to.isoformat()}",
                         file=sys.stderr)
               else:
                   if date_from_raw:
@@ -213,14 +205,14 @@ jobs:
                   # created BEFORE the window but merged WITHIN it.
                   # Sorting by created_at and breaking on created < date_from
                   # silently drops those PRs — the two-pass approach avoids that.
-                  using_hours_back = bool(hours_back_raw and hours_back_raw.isdigit()
-                                          and int(hours_back_raw) > 0)
-                  if using_hours_back:
+                  if using_scan_date:
+                      # scan_date = exact UTC day — use ISO datetimes, no extension
                       _sq_from = date_from.strftime("%Y-%m-%dT%H:%M:%SZ")
                       _sq_to   = date_to.strftime("%Y-%m-%dT%H:%M:%SZ")
                       merged_q  = f"merged:{_sq_from}..{_sq_to}"
                       scan_from = date_from
                   else:
+                      # Calendar date range — extend 1 day back for IST coverage
                       _scan_dt  = datetime.strptime(date_from_raw, "%Y-%m-%d") - timedelta(days=1)
                       scan_from = _scan_dt.replace(tzinfo=timezone.utc)
                       _end      = date_to_raw if date_to_raw else date_from_raw
@@ -578,7 +570,6 @@ jobs:
         env:
           PR_NUMBERS: ${{ inputs.pr_numbers }}
           SCAN_DATE:  ${{ inputs.scan_date }}
-          HOURS_BACK: ${{ inputs.hours_back }}
           DATE_FROM:  ${{ inputs.date_from }}
           DATE_TO:    ${{ inputs.date_to }}
           STATE:      ${{ inputs.state }}
@@ -594,7 +585,6 @@ jobs:
 
           pr_numbers = os.environ.get("PR_NUMBERS", "")
           scan_date  = os.environ.get("SCAN_DATE",  "")
-          hours_back = os.environ.get("HOURS_BACK", "")
           date_from  = os.environ.get("DATE_FROM", "")
           date_to    = os.environ.get("DATE_TO", "")
           state      = os.environ.get("STATE", "merged")
@@ -608,8 +598,6 @@ jobs:
               mode = f"Explicit PR numbers: `{pr_numbers}`"
           elif scan_date:
               mode = f"Single date: `{scan_date}` · state=`merged`"
-          elif hours_back:
-              mode = f"Last `{hours_back}` hours (rolling UTC window) · state=`merged`"
           else:
               mode = f"Date range: `{date_from or '*'}` → `{date_to or 'now'}` · state=`{state}`"
 
