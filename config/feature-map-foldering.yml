@@ -1,0 +1,559 @@
+################################################################################
+# feature-map-foldering.yml
+# Location: config/feature-map-foldering.yml
+#
+# Purpose:
+#   Maps tr/cobalt_foldering file paths / keywords to TestCategory names.
+#   TestCategory names match @SET CATEGORY_NAME=TestCategory=<name> in
+#   config/dotnet/**/*.bat files in tr/CobaltRegressionTesting.
+#
+# Mapping chain:
+#   cobalt_foldering changed files
+#     -> module / sub_path / keyword
+#       -> test_categories (this file)
+#         -> bat files with CATEGORY_NAME=TestCategory=<name>
+#           -> WL_DNet_*.yml workflows
+#
+# Priority order (highest wins):
+#   1. sub_path  — longest prefix match on the changed file path
+#   2. module    — top-level folder prefix match
+#   3. keyword   — PR title / body text match (case-insensitive)
+#
+# Repo layout (verified via git ls-tree HEAD --name-only in tr/cobalt_foldering):
+#   Foldering/              Core foldering module (shared by all products)
+#   FolderingCommon/        Shared utilities and base classes
+#   FolderingSerialized/    Serialization / deserialization layer
+#   FormsFolderingCore/     Forms-specific foldering core
+#   SharedFoldering/        Shared web resources
+#   SharedFolderingCache/   Caching infrastructure
+#   History/                Historical audit modules (HistoryListener, HistoryPlatform)
+#   CarswellFoldering/      Carswell / LN Canada foldering module
+#   CorrectionalFoldering/  Correctional law foldering module
+#   DraftingFoldering/      Legislative drafting foldering module
+#   TNPCarswellFoldering/   Thomson Newspapers Platform / Carswell foldering module
+#   WFBFoldering/           WFB foldering module
+#   eReaderFoldering/       eReader foldering module
+################################################################################
+
+version: "1.0"
+last_updated: "2026-06-17"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# MODULE MAPPINGS  (key = top-level folder name in cobalt_foldering)
+# Prefix match: any file whose path starts with "<key>/" maps here.
+# risk_multiplier: high | medium | low
+# ──────────────────────────────────────────────────────────────────────────────
+modules:
+
+  Foldering:
+    description: "Core foldering module — shared across all products"
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - FolderRecommendations
+      - FolderRedesign1
+      - FolderRedesign2
+      - FolderAnalysisKeyCite
+      - NewSmartFolders
+      - SmartFolders
+      - AnzFoldering
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  FolderingCommon:
+    description: "Shared foldering utilities — base classes, common models, localization"
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - FolderRecommendations
+      - FolderRedesign1
+      - FolderRedesign2
+      - FolderAnalysisKeyCite
+      - NewSmartFolders
+      - SmartFolders
+      - AnzFoldering
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  FolderingSerialized:
+    description: "Foldering serialization / deserialization layer"
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - FolderRedesign1
+      - FolderRedesign2
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  FormsFolderingCore:
+    description: "Forms-specific foldering core — NzFormsNPrecedent and related"
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - NzFormsNPrecedent
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  SharedFoldering:
+    description: "Shared web resources for foldering UI"
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - FolderRedesign1
+      - FolderRedesign2
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  SharedFolderingCache:
+    description: "Foldering caching infrastructure"
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  History:
+    description: "Historical / audit modules — HistoryListener and HistoryPlatform"
+    test_categories:
+      - Foldering
+      - FolderAnalysisKeyCite
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  CarswellFoldering:
+    description: "Carswell / LN Canada foldering module"
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  CorrectionalFoldering:
+    description: "Correctional law foldering module"
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  DraftingFoldering:
+    description: "Legislative drafting foldering module"
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  TNPCarswellFoldering:
+    description: "Thomson Newspapers Platform / Carswell foldering module"
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  WFBFoldering:
+    description: "WFB foldering module"
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  eReaderFoldering:
+    description: "eReader foldering module"
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+# ──────────────────────────────────────────────────────────────────────────────
+# SUB-MODULE PATH MAPPINGS  (key = file path prefix, longest match wins)
+# Priority 1 (highest).  Pattern: <Module>/src/  or  <Module>/<Sub>/
+# ──────────────────────────────────────────────────────────────────────────────
+sub_paths:
+
+  # ── Core foldering ───────────────────────────────────────────────────────────
+  "Foldering/src/":
+    product: Foldering
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - FolderRecommendations
+      - FolderRedesign1
+      - FolderRedesign2
+      - FolderAnalysisKeyCite
+      - NewSmartFolders
+      - SmartFolders
+      - AnzFoldering
+      - EdgeSmokeFeatures
+
+  "Foldering/WebContent/":
+    product: Foldering
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - FolderRedesign1
+      - FolderRedesign2
+      - NewSmartFolders
+      - SmartFolders
+      - EdgeSmokeFeatures
+
+  "Foldering/IntegrationTests/":
+    product: Foldering
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+  "Foldering/FunctionalTests/":
+    product: Foldering
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - EdgeSmokeFeatures
+
+  # ── Foldering Common ─────────────────────────────────────────────────────────
+  "FolderingCommon/src/":
+    product: Foldering
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - FolderRecommendations
+      - FolderRedesign1
+      - FolderRedesign2
+      - FolderAnalysisKeyCite
+      - NewSmartFolders
+      - SmartFolders
+      - AnzFoldering
+      - EdgeSmokeFeatures
+
+  # ── Foldering Serialized ─────────────────────────────────────────────────────
+  "FolderingSerialized/src/":
+    product: Foldering
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - FolderRedesign1
+      - FolderRedesign2
+      - EdgeSmokeFeatures
+
+  # ── Forms Foldering Core ─────────────────────────────────────────────────────
+  "FormsFolderingCore/src/":
+    product: Foldering
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - NzFormsNPrecedent
+      - EdgeSmokeFeatures
+
+  "FormsFolderingCore/EndpointTests/":
+    product: Foldering
+    test_categories:
+      - Foldering
+      - NzFormsNPrecedent
+      - EdgeSmokeFeatures
+
+  # ── Shared Foldering Cache ───────────────────────────────────────────────────
+  "SharedFolderingCache/src/":
+    product: Foldering
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - EdgeSmokeFeatures
+
+  # ── History ──────────────────────────────────────────────────────────────────
+  "History/HistoryPlatform/":
+    product: Foldering
+    test_categories:
+      - Foldering
+      - FolderAnalysisKeyCite
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+  "History/HistoryListener/":
+    product: Foldering
+    test_categories:
+      - Foldering
+      - FolderAnalysisKeyCite
+      - EdgeSmokeFeatures
+
+  # ── Carswell Foldering ───────────────────────────────────────────────────────
+  "CarswellFoldering/src/":
+    product: Canada
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - EdgeSmokeFeatures
+
+  # ── TNP Carswell Foldering ───────────────────────────────────────────────────
+  "TNPCarswellFoldering/src/":
+    product: Canada
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+  # ── Correctional Foldering ───────────────────────────────────────────────────
+  "CorrectionalFoldering/src/":
+    product: Correctional
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+  # ── Drafting Foldering ───────────────────────────────────────────────────────
+  "DraftingFoldering/src/":
+    product: Drafting
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+  # ── WFB Foldering ────────────────────────────────────────────────────────────
+  "WFBFoldering/src/":
+    product: WFB
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+  "WFBFoldering/EndpointTests/":
+    product: WFB
+    test_categories:
+      - Foldering
+      - EdgeSmokeFeatures
+
+  # ── eReader Foldering ────────────────────────────────────────────────────────
+  "eReaderFoldering/src/":
+    product: eReader
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+# ──────────────────────────────────────────────────────────────────────────────
+# KEYWORD MAPPINGS  (matched against PR title + body, case-insensitive)
+# Priority 3 (lowest — fires when no module or sub_path match is found).
+# ──────────────────────────────────────────────────────────────────────────────
+keywords:
+
+  folder:
+    product: Foldering
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - FolderRedesign1
+      - FolderRedesign2
+      - EdgeSmokeFeatures
+
+  foldering:
+    product: Foldering
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - FolderRecommendations
+      - FolderRedesign1
+      - FolderRedesign2
+      - FolderAnalysisKeyCite
+      - NewSmartFolders
+      - SmartFolders
+      - EdgeSmokeFeatures
+
+  "smart folder":
+    product: SmartFolders
+    test_categories:
+      - NewSmartFolders
+      - SmartFolders
+      - Foldering
+      - EdgeSmokeFeatures
+
+  "research organizer":
+    product: Foldering
+    test_categories:
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - Foldering
+      - EdgeSmokeFeatures
+
+  "folder recommendation":
+    product: Foldering
+    test_categories:
+      - FolderRecommendations
+      - Foldering
+      - EdgeSmokeFeatures
+
+  "folder redesign":
+    product: Foldering
+    test_categories:
+      - FolderRedesign1
+      - FolderRedesign2
+      - Foldering
+      - EdgeSmokeFeatures
+
+  "folder analysis":
+    product: Foldering
+    test_categories:
+      - FolderAnalysisKeyCite
+      - Foldering
+      - EdgeSmokeFeatures
+
+  keycite:
+    product: KeyCite
+    test_categories:
+      - FolderAnalysisKeyCite
+      - Foldering
+      - EdgeSmokeFeatures
+
+  history:
+    product: Foldering
+    test_categories:
+      - Foldering
+      - FolderAnalysisKeyCite
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+  cache:
+    product: Foldering
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - ResearchOrganizer2
+      - ResearchOrganizer3
+      - ResearchOrganizer4
+      - EdgeSmokeFeatures
+
+  serialization:
+    product: Foldering
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+  aunz:
+    product: AUNZ
+    test_categories:
+      - AnzFoldering
+      - Foldering
+      - EdgeSmokeFeatures
+
+  anz:
+    product: AUNZ
+    test_categories:
+      - AnzFoldering
+      - Foldering
+      - EdgeSmokeFeatures
+
+  "nz forms":
+    product: AUNZ
+    test_categories:
+      - NzFormsNPrecedent
+      - AnzFoldering
+      - Foldering
+      - EdgeSmokeFeatures
+
+  canada:
+    product: Canada
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+  carswell:
+    product: Canada
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+  correctional:
+    product: Correctional
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+  drafting:
+    product: Drafting
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+  ereader:
+    product: eReader
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+  "e-reader":
+    product: eReader
+    test_categories:
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+# ──────────────────────────────────────────────────────────────────────────────
+# CHANGE-TYPE RULES
+# ──────────────────────────────────────────────────────────────────────────────
+change_type_rules:
+  docs:
+    skip_all: true
+  chore:
+    test_categories_override:
+      - EdgeSmokeFeatures
+  test:
+    skip_integration: true
+
+# ──────────────────────────────────────────────────────────────────────────────
+# HIGH-RISK ALWAYS-ADD  (appended when risk_level == high)
+# ──────────────────────────────────────────────────────────────────────────────
+high_risk_always_add:
+  test_categories:
+    - Foldering
+    - ResearchOrganizer
+    - EdgeSmokeFeatures
