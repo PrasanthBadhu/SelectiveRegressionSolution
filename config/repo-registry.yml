@@ -120,6 +120,18 @@ repos:
     test_environment:   DEMO
     lookback_days:      7
 
+  # ── Typeahead repository ─────────────────────────────────────────────────────
+  - name:               cobalt_typeahead
+    full_name:          tr/cobalt_typeahead
+    enabled:            true
+    description:        "Cobalt Typeahead — search autocomplete and suggestion across products"
+    read_token_secret:  COBALT_READ_TOKEN
+    feature_map_repo:   tr/Seven-Kingdoms
+    feature_map_path:   feature-map-typeahead.yml
+    feature_map_local:  "config/feature-map-typeahead.yml"
+    test_environment:   DEMO
+    lookback_days:      7
+
   # ── Template for future repositories ────────────────────────────────────────
   # - name:               cobalt_documents
   #   full_name:          tr/cobalt_documents

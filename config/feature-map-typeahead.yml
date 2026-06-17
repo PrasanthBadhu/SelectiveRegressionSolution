@@ -1,0 +1,270 @@
+################################################################################
+# feature-map-typeahead.yml
+# Location: config/feature-map-typeahead.yml
+#
+# Purpose:
+#   Maps tr/cobalt_typeahead file paths / keywords to TestCategory names.
+#   TestCategory names match @SET CATEGORY_NAME=TestCategory=<name> in
+#   config/dotnet/**/*.bat files in tr/CobaltRegressionTesting.
+#
+# Mapping chain:
+#   cobalt_typeahead changed files
+#     -> module / sub_path / keyword
+#       -> test_categories (this file)
+#         -> bat files with CATEGORY_NAME=TestCategory=<name>
+#           -> WL_DNet_*.yml workflows
+#
+# Priority order (highest wins):
+#   1. sub_path  — longest prefix match on the changed file path
+#   2. module    — top-level folder prefix match
+#   3. keyword   — PR title / body text match (case-insensitive)
+#
+# Repo layout (verified via gh api repos/tr/cobalt_typeahead/contents/):
+#   CobaltTypeahead/        Core typeahead module (shared by all products)
+#   WLNTypeahead/           Westlaw Next typeahead module
+#   CarswellTypeahead/      Carswell / LN Canada typeahead module
+#   CorrectionalTypeahead/  Correctional law typeahead module
+#   TNPCarswellTypeahead/   Thomson Newspapers Platform / Carswell typeahead module
+#   config/                 Checkstyle configuration only
+#
+# Note: Typeahead provides search autocomplete / suggestion. Changes here
+#       impact the search input experience — CoreSearch and related search
+#       categories are the primary test targets.
+################################################################################
+
+version: "1.0"
+last_updated: "2026-06-17"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# MODULE MAPPINGS  (key = top-level folder name in cobalt_typeahead)
+# Prefix match: any file whose path starts with "<key>/" maps here.
+# risk_multiplier: high | medium | low
+# ──────────────────────────────────────────────────────────────────────────────
+modules:
+
+  CobaltTypeahead:
+    description: "Core typeahead engine — shared autocomplete/suggestion across all products"
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - AdvancedSearchTemplate
+      - BrowsePageSearch
+      - SmartSearch
+      - MiscellaneousSearch
+      - SearchMiscellaneous
+      - EdgeSmokeFeatures
+    risk_multiplier: high
+
+  WLNTypeahead:
+    description: "Westlaw Next typeahead module"
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - AdvancedSearchTemplate
+      - BrowsePageSearch
+      - SmartSearch
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  CarswellTypeahead:
+    description: "Carswell / LN Canada typeahead module"
+    test_categories:
+      - CoreSearch
+      - Search
+      - EdgeSmokeFeatures
+    risk_multiplier: medium
+
+  CorrectionalTypeahead:
+    description: "Correctional law typeahead module"
+    test_categories:
+      - CoreSearch
+      - WLNCorrectional
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+  TNPCarswellTypeahead:
+    description: "Thomson Newspapers Platform / Carswell typeahead module"
+    test_categories:
+      - CoreSearch
+      - EdgeSmokeFeatures
+    risk_multiplier: low
+
+# ──────────────────────────────────────────────────────────────────────────────
+# SUB-MODULE PATH MAPPINGS  (key = file path prefix, longest match wins)
+# Priority 1 (highest).
+# ──────────────────────────────────────────────────────────────────────────────
+sub_paths:
+
+  # ── Core typeahead ───────────────────────────────────────────────────────────
+  "CobaltTypeahead/src/":
+    product: Search
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - AdvancedSearchTemplate
+      - BrowsePageSearch
+      - SmartSearch
+      - MiscellaneousSearch
+      - SearchMiscellaneous
+      - EdgeSmokeFeatures
+
+  # ── WLN Typeahead ────────────────────────────────────────────────────────────
+  "WLNTypeahead/src/":
+    product: WestlawNext
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - AdvancedSearchTemplate
+      - BrowsePageSearch
+      - SmartSearch
+      - EdgeSmokeFeatures
+
+  "WLNTypeahead/WebContent/":
+    product: WestlawNext
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - EdgeSmokeFeatures
+
+  # ── Carswell Typeahead ───────────────────────────────────────────────────────
+  "CarswellTypeahead/src/":
+    product: Canada
+    test_categories:
+      - CoreSearch
+      - Search
+      - EdgeSmokeFeatures
+
+  "CarswellTypeahead/WebContent/":
+    product: Canada
+    test_categories:
+      - CoreSearch
+      - Search
+      - EdgeSmokeFeatures
+
+  # ── Correctional Typeahead ───────────────────────────────────────────────────
+  "CorrectionalTypeahead/src/":
+    product: Correctional
+    test_categories:
+      - CoreSearch
+      - WLNCorrectional
+      - EdgeSmokeFeatures
+
+  # ── TNP Carswell Typeahead ───────────────────────────────────────────────────
+  "TNPCarswellTypeahead/src/":
+    product: Canada
+    test_categories:
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+# ──────────────────────────────────────────────────────────────────────────────
+# KEYWORD MAPPINGS  (matched against PR title + body, case-insensitive)
+# Priority 3 (lowest — fires when no module or sub_path match is found).
+# ──────────────────────────────────────────────────────────────────────────────
+keywords:
+
+  typeahead:
+    product: Search
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - AdvancedSearchTemplate
+      - EdgeSmokeFeatures
+
+  autocomplete:
+    product: Search
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - AdvancedSearchTemplate
+      - SmartSearch
+      - EdgeSmokeFeatures
+
+  suggestion:
+    product: Search
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - SmartSearch
+      - EdgeSmokeFeatures
+
+  "search suggest":
+    product: Search
+    test_categories:
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - SmartSearch
+      - EdgeSmokeFeatures
+
+  "smart search":
+    product: Search
+    test_categories:
+      - SmartSearch
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  "browse page":
+    product: Search
+    test_categories:
+      - BrowsePageSearch
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "advanced search":
+    product: Search
+    test_categories:
+      - AdvancedSearchTemplate
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  canada:
+    product: Canada
+    test_categories:
+      - CoreSearch
+      - Search
+      - EdgeSmokeFeatures
+
+  carswell:
+    product: Canada
+    test_categories:
+      - CoreSearch
+      - Search
+      - EdgeSmokeFeatures
+
+  correctional:
+    product: Correctional
+    test_categories:
+      - CoreSearch
+      - WLNCorrectional
+      - EdgeSmokeFeatures
+
+# ──────────────────────────────────────────────────────────────────────────────
+# CHANGE-TYPE RULES
+# ──────────────────────────────────────────────────────────────────────────────
+change_type_rules:
+  docs:
+    skip_all: true
+  chore:
+    test_categories_override:
+      - EdgeSmokeFeatures
+  test:
+    skip_integration: true
+
+# ──────────────────────────────────────────────────────────────────────────────
+# HIGH-RISK ALWAYS-ADD  (appended when risk_level == high)
+# ──────────────────────────────────────────────────────────────────────────────
+high_risk_always_add:
+  test_categories:
+    - CoreSearch
+    - GlobalSearch
+    - EdgeSmokeFeatures
