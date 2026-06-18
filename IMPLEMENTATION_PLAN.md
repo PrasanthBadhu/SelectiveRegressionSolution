@@ -16,7 +16,7 @@
 │  tr/CobaltRegressionTesting  (GitHub Actions host)                                   │
 │                                                                                      │
 │  ┌──────────────────────────────────────────────────────────────────────────────┐   │
-│  │  pr-watcher-scheduled.yml   (cron: */5 * * * *  +  manual dispatch)          │   │
+│  │  pr-watcher.yml   (cron: */5 * * * *  +  manual dispatch)          │   │
 │  │                                                                              │   │
 │  │  1. Read config/repo-registry.yml                                            │   │
 │  │     → 3 source repos: cobalt_search, cobalt_website, cobalt_static-content  │   │
@@ -69,7 +69,7 @@
 
 | Workflow | Trigger | PRs covered | Purpose |
 |---|---|---|---|
-| `pr-watcher-scheduled.yml` | Every 5 min + manual | **Open** PRs (new/updated) | Pre-merge quality gate |
+| `pr-watcher.yml` | Every 5 min + manual | **Open** PRs (new/updated) | Pre-merge quality gate |
 | `pr-poller.yml` (existing) | Manual only | **Merged** PRs (lookback window) | Post-merge regression sweep |
 
 ---
@@ -144,7 +144,7 @@ source-repo changed files   (cobalt_search | cobalt_website | cobalt_static-cont
 
 | File | Status | Change Summary |
 |---|---|---|
-| `.github/workflows/pr-watcher-scheduled.yml` | **NEW** | Scheduled PR watcher; reads repo-registry.yml; loops over 3 repos |
+| `.github/workflows/pr-watcher.yml` | **NEW** | Scheduled PR watcher; reads repo-registry.yml; loops over 3 repos |
 | `.github/workflows/selective-regression.yml` | **UPDATED** | Added optional `source_repo` input; null-safe `classify_file` |
 | `.github/workflows/pr-poller.yml` | **UPDATED** | Same null-safe `classify_file` fix applied |
 | `config/repo-registry.yml` | **NEW** | Registers cobalt_search, cobalt_website, cobalt_static-content |
@@ -253,9 +253,9 @@ git commit -m "fix: null-safe classify_file; add source_repo input to selective-
 git push origin main
 ```
 
-**Step 5 — Deploy new pr-watcher-scheduled.yml**
+**Step 5 — Deploy new pr-watcher.yml**
 ```bash
-git add .github/workflows/pr-watcher-scheduled.yml
+git add .github/workflows/pr-watcher.yml
 git commit -m "feat: add scheduled PR watcher for 3-repo selective regression"
 git push origin main
 ```
@@ -292,7 +292,7 @@ GitHub UI → Actions → "PR Watcher - Scheduled"
 T+0:00   Developer opens a PR in tr/cobalt_website
          Changed files include: WLNWebsite/src/main/java/com/tr/cobalt/web/analytics/...
 
-T+0–5m   pr-watcher-scheduled.yml fires
+T+0–5m   pr-watcher.yml fires
 
 T+0:05s  Restore state: state/repos/cobalt_website/last_seen_prs.json
 
@@ -479,7 +479,7 @@ tr/CobaltRegressionTesting → Settings → Secrets and variables → Actions
 C:\SelectiveRegressionSolution\
 │
 ├── .github\workflows\
-│   ├── pr-watcher-scheduled.yml         ← NEW  → deploy to tr/CobaltRegressionTesting
+│   ├── pr-watcher.yml         ← NEW  → deploy to tr/CobaltRegressionTesting
 │   ├── selective-regression.yml         ← UPDATED (source_repo input; null-safe classify_file)
 │   └── pr-poller.yml                    ← UPDATED (null-safe classify_file)
 │

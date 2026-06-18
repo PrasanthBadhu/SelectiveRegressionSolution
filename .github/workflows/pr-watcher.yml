@@ -1,6 +1,6 @@
 ################################################################################
-# pr-watcher-scheduled.yml
-# Location: tr/CobaltRegressionTesting/.github/workflows/pr-watcher-scheduled.yml
+# pr-watcher.yml
+# Location: tr/CobaltRegressionTesting/.github/workflows/pr-watcher.yml
 #
 # Purpose:
 #   Runs on a schedule (every 5 minutes) to detect NEW or UPDATED open PRs in
@@ -37,7 +37,7 @@
 #      in Seven-Kingdoms and set feature_map_path in the registry entry
 ################################################################################
 
-name: PR Watcher - Scheduled
+name: PR Watcher
 
 on:
   schedule:

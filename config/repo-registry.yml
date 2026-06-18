@@ -3,7 +3,7 @@
 # Location: tr/CobaltRegressionTesting/config/repo-registry.yml
 #
 # Purpose:
-#   Defines all source repositories that pr-watcher-scheduled.yml monitors
+#   Defines all source repositories that pr-watcher.yml monitors
 #   for new and updated Pull Requests.
 #
 #   To add a new developer repository:
