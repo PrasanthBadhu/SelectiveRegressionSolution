@@ -17,7 +17,7 @@
 #      -> detects PRs that are new or whose head SHA has changed since last run
 #   4. For each new/changed PR: run feature_test_mapper.py
 #      -> maps changed files -> TestCategory names -> WL_DNet_*.yml workflow names
-#   5. Dispatch selective-regression.yml once per PR with its workflow list
+#   5. Dispatch each WL_DNet_*.yml workflow directly in tr/CobaltRegressionTesting
 #   6. Commit updated per-repo state back to state-tracking branch
 #
 # State layout on state-tracking branch:
@@ -283,76 +283,73 @@ jobs:
               print(f"  -> {wf}.yml")
           EOF
 
-      # ── Step 4: Dispatch selective-regression.yml once per PR ───────────────
-      - name: Dispatch selective regression per PR
-        if: |
-          steps.detect.outputs.pr_count != '0' &&
-          github.event.inputs.dry_run != 'true'
+      # ── Step 4: Dispatch WL_DNet_*.yml workflows directly ────────────────────
+      - name: Dispatch WL_DNet workflows
+        if: steps.detect.outputs.pr_count != '0'
         env:
           GH_TOKEN: ${{ secrets.REGRESSION_TRIGGER_PAT }}
           REPO:     ${{ github.repository }}
+          DRY_RUN:  ${{ github.event.inputs.dry_run || 'false' }}
         run: |
           python3 - <<'EOF'
-          import json, os, subprocess, sys
+          import json, os, subprocess, sys, yaml
           from pathlib import Path
 
-          repo = os.environ["REPO"]
-          gh   = "gh"
-          prs  = json.loads(Path("state/prs_to_process.json").read_text())
+          repo    = os.environ["REPO"]
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          gh      = "gh"
+
+          if dry_run:
+              print("DRY RUN — analysis complete, regression workflows will NOT be triggered.")
+
+          # Read test environment from repo registry (first enabled repo wins)
+          registry = yaml.safe_load(Path("config/repo-registry.yml").read_text())
+          enabled  = [r for r in registry.get("repos", []) if r.get("enabled")]
+          test_env = enabled[0].get("test_environment", "DEMO") if enabled else "DEMO"
+
+          wf_json = Path("state/all_impacted_workflows.json")
+          if not wf_json.exists():
+              print("No impacted workflows file found.", file=sys.stderr)
+              sys.exit(0)
+
+          all_wf = json.loads(wf_json.read_text())
+          if not all_wf:
+              print("No workflows to dispatch.")
+              sys.exit(0)
 
           dispatched = 0
-          skipped    = 0
           failed     = 0
 
-          for pr in prs:
-              pr_num    = pr["pr_number"]
-              repo_name = pr.get("_repo_name", "cobalt_search")
-              repo_cfg  = pr.get("_repo_cfg", {})
-              test_env  = repo_cfg.get("test_environment", "DEMO")
-              source_repo = pr.get("_source_repo", "tr/cobalt_search")
+          for wf in all_wf:
+              wf_file_name = f"{wf}.yml"
 
-              plan_file = Path(f"state/repos/{repo_name}/test_plans/pr_{pr_num}.json")
-              if not plan_file.exists():
-                  print(f"  SKIP  PR #{pr_num} ({repo_name}): no test plan generated", file=sys.stderr)
-                  skipped += 1
+              if dry_run:
+                  print(f"  DRY  {wf_file_name} [{test_env}]")
+                  dispatched += 1
                   continue
 
-              plan = json.loads(plan_file.read_text())
-              if plan.get("skip_all"):
-                  print(f"  SKIP  PR #{pr_num} ({repo_name}): skip_all=true ({plan.get('reason','')})")
-                  skipped += 1
-                  continue
-
-              workflows = plan.get("dotnet_workflows", [])
-              if not workflows:
-                  print(f"  SKIP  PR #{pr_num} ({repo_name}): no workflows mapped", file=sys.stderr)
-                  skipped += 1
-                  continue
-
-              # Dispatch selective-regression.yml
               cmd = [
-                  gh, "workflow", "run", "selective-regression.yml",
+                  gh, "workflow", "run", wf_file_name,
                   "--repo", repo,
-                  "-f", f"pr_number={pr_num}",
-                  "-f", f"pr_title={pr.get('pr_title','')[:80]}",
-                  "-f", f"pr_url={pr.get('pr_url','')}",
-                  "-f", f"head_sha={pr.get('head_sha','')}",
-                  "-f", f"risk_level={pr.get('risk_level','low')}",
-                  "-f", f"modules={','.join(pr.get('modules_affected',[]))}",
-                  "-f", f"products={','.join(pr.get('all_products',[]))}",
-                  "-f", f"dotnet_workflows={','.join(workflows)}",
-                  "-f", f"source_repo={source_repo}",
-                  "-f", f"TEST_ENVIRONMENT={test_env}",
+                  "-f", f"TEST_SITE_DotNet={test_env}",
               ]
               result = subprocess.run(cmd, capture_output=True, text=True)
               if result.returncode == 0:
-                  print(f"  OK  PR #{pr_num} ({repo_name}): dispatched {len(workflows)} workflow(s)")
+                  print(f"  OK  {wf_file_name}  (env={test_env})")
                   dispatched += 1
               else:
-                  print(f"  FAIL PR #{pr_num} ({repo_name}): {result.stderr.strip()}", file=sys.stderr)
-                  failed += 1
+                  err = result.stderr.strip()
+                  if "422" in err or "workflow_dispatch" in err.lower():
+                      print(f"  WARN {wf_file_name}: no workflow_dispatch trigger — skipped",
+                            file=sys.stderr)
+                  else:
+                      print(f"  FAIL {wf_file_name}: {err}", file=sys.stderr)
+                      failed += 1
 
-          print(f"\nDispatched: {dispatched}  Skipped: {skipped}  Failed: {failed}")
+          if dry_run:
+              print(f"\nDRY RUN — {dispatched} workflow(s) analysed, none triggered.")
+          else:
+              print(f"\nDispatched: {dispatched}  Failed: {failed}")
           if failed > 0:
               sys.exit(1)
           EOF
