@@ -30,8 +30,8 @@
 # App, Analytics) are added below with accurate sub_path entries.
 ################################################################################
 
-version: "3.0"
-last_updated: "2026-06-17"
+version: "4.0"
+last_updated: "2026-06-18"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # MODULE MAPPINGS  (key = top-level folder name in cobalt_website)
@@ -138,6 +138,8 @@ modules:
       - PrPSynopsisDelivery
       - ResearchReportsDelivery
       - RelatedInfoDelivery
+      - "Find & Print"
+      - "Portal Manager Find & Print"
       - EdgeSmokeFeatures
     risk_multiplier: medium
 
@@ -159,6 +161,13 @@ modules:
       - Alerts
       - AlertsAdmin
       - AnzAlerts
+      - "Alerts Admin 1"
+      - "Alerts Admin 2"
+      - "Alerts Admin 3"
+      - "Alerts Admin 4"
+      - "Alerts Admin Edge"
+      - "Alerts Alert Center"
+      - "Westlaw Today"
       - EdgeSmokeFeatures
     risk_multiplier: medium
 
@@ -209,6 +218,8 @@ modules:
       - ResearchOutlineBuilder
       - ParallelSearch
       - LitigationAnalytics
+      - "Edge 2.0 Smoke Tests (Westlaw Precision)"
+      - "Westlaw Advantage"
       - EdgeSmokeFeatures
     risk_multiplier: medium
 
@@ -224,6 +235,10 @@ modules:
       - RelatedInfoTabs
       - RelatedInfoMiscellaneous
       - RelatedInfoReferences
+      - "Inline KeyCite Flags"
+      - "Related Documents"
+      - "Related Information Copy With Reference"
+      - "Related Information UI Platform"
       - EdgeSmokeFeatures
     risk_multiplier: medium
 
@@ -358,6 +373,41 @@ modules:
       - BLT2015
       - CitingReferences
       - Aug2025-Transition
+      - "Alerts Admin 1"
+      - "Alerts Admin 2"
+      - "Alerts Admin 3"
+      - "Alerts Admin 4"
+      - "Alerts Admin Edge"
+      - "Alerts Alert Center"
+      - "Arbitration II"
+      - "BLC Core Regression"
+      - "Company Investigator Core"
+      - "Content Types / Set Default"
+      - "Dockets Gateway"
+      - "Edge Modules Smoke"
+      - "Edge 2.0 Smoke Tests (Westlaw Precision)"
+      - "Find & Print"
+      - "FirmCentral - Matter Management"
+      - "Global Navigation"
+      - "Home Page"
+      - "New York Official Digest"
+      - "Portal Manager Find & Print"
+      - "Practical Law US"
+      - "Preferences"
+      - "Private Files"
+      - "Professional Profiles"
+      - "Professional Reports"
+      - "Public Utility Commissions"
+      - "Recent Filters"
+      - "Related Documents"
+      - "Related Information Copy With Reference"
+      - "Related Information UI Platform"
+      - "Scrolling"
+      - "Westlaw Advantage"
+      - "Westlaw Today"
+      - "WLN Campus"
+      - "WLN Core User Scenarios"
+      - "WLN Enhancements"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -975,6 +1025,7 @@ keywords:
       - WebsiteCore1
       - WebsiteCore2
       - HomePage
+      - "Home Page"
       - EdgeSmokeFeatures
 
   navigation:
@@ -1060,6 +1111,12 @@ keywords:
       - CapitolWatch
       - Alerts
       - AlertsAdmin
+      - "Alerts Admin 1"
+      - "Alerts Admin 2"
+      - "Alerts Admin 3"
+      - "Alerts Admin 4"
+      - "Alerts Admin Edge"
+      - "Alerts Alert Center"
       - EdgeSmokeFeatures
 
   folder:
@@ -1119,6 +1176,7 @@ keywords:
       - EdgeSmoke2.0
       - CoCites
       - GraphicalHistory
+      - "Westlaw Advantage"
       - EdgeSmokeFeatures
 
   keycite:
@@ -1245,6 +1303,7 @@ keywords:
       - SecFilingsSectionSearchFandQdocuments
       - SecFilingsSectionSearchKdocuments
       - SectionSearch
+      - "BLC Core Regression"
 
   "business law":
     product: BusinessLawCenter
@@ -1276,6 +1335,7 @@ keywords:
     product: Dockets
     test_categories:
       - DocketTests
+      - "Dockets Gateway"
       - EdgeSmokeFeatures
 
   california:
@@ -1299,6 +1359,7 @@ keywords:
     test_categories:
       - PortalManager
       - PortalManagerSearch
+      - "Portal Manager Find & Print"
 
   "court express":
     product: CourtExpress
@@ -1676,6 +1737,7 @@ keywords:
     test_categories:
       - WestlawTodayAlerts
       - OpenWeb
+      - "Westlaw Today"
       - EdgeSmokeFeatures
 
   "promotion banner":
@@ -1760,6 +1822,243 @@ keywords:
       - ProceduralPosture
       - CanadaDocDisplay
       - DocumentMisc
+      - EdgeSmokeFeatures
+
+  # ── Java test category keywords ──────────────────────────────────────────────
+  firmcentral:
+    product: WestlawNext
+    test_categories:
+      - "FirmCentral - Matter Management"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "matter management":
+    product: WestlawNext
+    test_categories:
+      - "FirmCentral - Matter Management"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "wln campus":
+    product: WestlawNext
+    test_categories:
+      - "WLN Campus"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "wln core":
+    product: WestlawNext
+    test_categories:
+      - "WLN Core User Scenarios"
+      - "WLN Enhancements"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "wln enhancements":
+    product: WestlawNext
+    test_categories:
+      - "WLN Enhancements"
+      - "WLN Core User Scenarios"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "global navigation":
+    product: WestlawNext
+    test_categories:
+      - "Global Navigation"
+      - CoreWebsite
+      - WebsiteCore1
+      - EdgeSmokeFeatures
+
+  "home page":
+    product: WestlawNext
+    test_categories:
+      - "Home Page"
+      - HomePage
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  preferences:
+    product: WestlawNext
+    test_categories:
+      - "Preferences"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  scrolling:
+    product: WestlawNext
+    test_categories:
+      - "Scrolling"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "content types":
+    product: WestlawNext
+    test_categories:
+      - "Content Types / Set Default"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "professional profiles":
+    product: WestlawNext
+    test_categories:
+      - "Professional Profiles"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "professional reports":
+    product: WestlawNext
+    test_categories:
+      - "Professional Reports"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "recent filters":
+    product: WestlawNext
+    test_categories:
+      - "Recent Filters"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "edge modules smoke":
+    product: WestlawNext
+    test_categories:
+      - "Edge Modules Smoke"
+      - EdgeSmokeFeatures
+
+  "edge 2.0":
+    product: WestlawPrecision
+    test_categories:
+      - "Edge 2.0 Smoke Tests (Westlaw Precision)"
+      - EdgeSmoke2.0
+      - EdgeSmokeFeatures
+
+  "find and print":
+    product: Delivery
+    test_categories:
+      - "Find & Print"
+      - "Portal Manager Find & Print"
+      - WebsiteDelivery
+      - EdgeSmokeFeatures
+
+  "find & print":
+    product: Delivery
+    test_categories:
+      - "Find & Print"
+      - "Portal Manager Find & Print"
+      - WebsiteDelivery
+      - EdgeSmokeFeatures
+
+  "private files":
+    product: Foldering
+    test_categories:
+      - "Private Files"
+      - EdgeSmokeFeatures
+
+  "inline keycite":
+    product: KeyCite
+    test_categories:
+      - "Inline KeyCite Flags"
+      - RelatedInfoFlags
+      - EdgeSmokeFeatures
+
+  "related documents":
+    product: RelatedInfo
+    test_categories:
+      - "Related Documents"
+      - RelatedInfoContent
+      - RelatedInfoReferences
+      - EdgeSmokeFeatures
+
+  "copy with reference":
+    product: RelatedInfo
+    test_categories:
+      - "Related Information Copy With Reference"
+      - RelatedInfoContent
+      - EdgeSmokeFeatures
+
+  "related information":
+    product: RelatedInfo
+    test_categories:
+      - "Related Information UI Platform"
+      - "Related Information Copy With Reference"
+      - RelatedInfoContent
+      - RelatedInfoFacets
+      - EdgeSmokeFeatures
+
+  "new york":
+    product: Document
+    test_categories:
+      - "New York Official Digest"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "practical law":
+    product: WestlawNext
+    test_categories:
+      - "Practical Law US"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "public utility":
+    product: WestlawNext
+    test_categories:
+      - "Public Utility Commissions"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  arbitration:
+    product: WestlawNext
+    test_categories:
+      - "Arbitration II"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "company investigator":
+    product: WestlawNext
+    test_categories:
+      - "Company Investigator Core"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "search facets":
+    product: Search
+    test_categories:
+      - "SearchFacets"
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  "data orchestration":
+    product: WestlawNext
+    test_categories:
+      - "Data Orchestration Core Platform"
+      - CoreWebsite
+      - EdgeSmokeFeatures
+
+  "search platform":
+    product: Search
+    test_categories:
+      - "Search Platform WLN"
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  "search results modernization":
+    product: Search
+    test_categories:
+      - "Search Results Modernization - Daily"
+      - "Search Results Modernization - Weekly"
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  wlt:
+    product: WestlawToday
+    test_categories:
+      - WestlawTodayAlerts
+      - OpenWeb
+      - "Westlaw Today"
       - EdgeSmokeFeatures
 
 # ──────────────────────────────────────────────────────────────────────────────

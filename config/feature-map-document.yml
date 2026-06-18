@@ -33,8 +33,8 @@
 #   docs/                   Documentation (skip_all applied via change_type_rules)
 ################################################################################
 
-version: "2.0"
-last_updated: "2026-06-17"
+version: "3.0"
+last_updated: "2026-06-18"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # MODULE MAPPINGS  (key = top-level folder name in cobalt_document_netcore)
@@ -64,6 +64,17 @@ modules:
       - CitingReferences
       - PublicDomainCitationsEdge
       - PublicDomainCitationsWln
+      - "Arbitration II"
+      - "Content Types / Set Default"
+      - "Find & Print"
+      - "Inline KeyCite Flags"
+      - "New York Official Digest"
+      - "Portal Manager Find & Print"
+      - "Practical Law US"
+      - "Public Utility Commissions"
+      - "Related Documents"
+      - "Related Information Copy With Reference"
+      - "Scrolling"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -89,6 +100,17 @@ modules:
       - SaveSnippet_Edge
       - PublicDomainCitationsEdge
       - PublicDomainCitationsWln
+      - "Arbitration II"
+      - "Content Types / Set Default"
+      - "Find & Print"
+      - "Inline KeyCite Flags"
+      - "New York Official Digest"
+      - "Portal Manager Find & Print"
+      - "Practical Law US"
+      - "Public Utility Commissions"
+      - "Related Documents"
+      - "Related Information Copy With Reference"
+      - "Scrolling"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -176,6 +198,11 @@ sub_paths:
       - SaveSnippet_Edge
       - VersionsCompare
       - CitingReferences
+      - "Find & Print"
+      - "Related Documents"
+      - "Related Information Copy With Reference"
+      - "Scrolling"
+      - "Inline KeyCite Flags"
       - EdgeSmokeFeatures
 
   "Document/Document/Pipeline/":
@@ -267,6 +294,14 @@ sub_paths:
       - FocusHighlighting1
       - PublicDomainCitationsEdge
       - PublicDomainCitationsWln
+      - "Find & Print"
+      - "Related Documents"
+      - "Related Information Copy With Reference"
+      - "Scrolling"
+      - "Inline KeyCite Flags"
+      - "Practical Law US"
+      - "New York Official Digest"
+      - "Arbitration II"
       - EdgeSmokeFeatures
 
   "WestlawNext/WLNDocument/Domain/DocumentOutline/":
@@ -631,6 +666,107 @@ keywords:
       - ProceduralPosture
       - CanadaDocDisplay
       - DocumentMisc
+      - EdgeSmokeFeatures
+
+  "find and print":
+    product: Delivery
+    test_categories:
+      - "Find & Print"
+      - "Portal Manager Find & Print"
+      - WebsiteDelivery
+      - DOCX
+      - EdgeSmokeFeatures
+
+  "find & print":
+    product: Delivery
+    test_categories:
+      - "Find & Print"
+      - "Portal Manager Find & Print"
+      - WebsiteDelivery
+      - DOCX
+      - EdgeSmokeFeatures
+
+  arbitration:
+    product: Document
+    test_categories:
+      - "Arbitration II"
+      - Document
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  "practical law":
+    product: Document
+    test_categories:
+      - "Practical Law US"
+      - Document
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  "public utility":
+    product: Document
+    test_categories:
+      - "Public Utility Commissions"
+      - Document
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  "new york digest":
+    product: Document
+    test_categories:
+      - "New York Official Digest"
+      - Document
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  "portal manager":
+    product: Delivery
+    test_categories:
+      - "Portal Manager Find & Print"
+      - "Find & Print"
+      - WebsiteDelivery
+      - EdgeSmokeFeatures
+
+  "related documents":
+    product: Document
+    test_categories:
+      - "Related Documents"
+      - "Related Information Copy With Reference"
+      - RelatedInfoDelivery
+      - Document
+      - EdgeSmokeFeatures
+
+  "copy with reference":
+    product: Document
+    test_categories:
+      - "Related Information Copy With Reference"
+      - "Related Documents"
+      - RelatedInfoDelivery
+      - Document
+      - EdgeSmokeFeatures
+
+  scrolling:
+    product: Document
+    test_categories:
+      - "Scrolling"
+      - Document
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  "content type":
+    product: Document
+    test_categories:
+      - "Content Types / Set Default"
+      - Document
+      - DocDisplay
+      - EdgeSmokeFeatures
+
+  "inline keycite":
+    product: Document
+    test_categories:
+      - "Inline KeyCite Flags"
+      - RelatedInfoFlags
+      - Document
+      - DocDisplay
       - EdgeSmokeFeatures
 
 # ──────────────────────────────────────────────────────────────────────────────

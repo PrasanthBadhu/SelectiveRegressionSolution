@@ -32,8 +32,8 @@
 #       categories are the primary test targets.
 ################################################################################
 
-version: "2.0"
-last_updated: "2026-06-17"
+version: "3.0"
+last_updated: "2026-06-18"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # MODULE MAPPINGS  (key = top-level folder name in cobalt_typeahead)
@@ -56,6 +56,9 @@ modules:
       - IndigoTrdTypeahead
       - TCOSectionEdge
       - TCOSectionWln
+      - "Search Platform WLN"
+      - "WLN Core User Scenarios"
+      - "WLN Enhancements"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -71,6 +74,9 @@ modules:
       - IndigoTrdTypeahead
       - TCOSectionEdge
       - TCOSectionWln
+      - "Search Platform WLN"
+      - "WLN Core User Scenarios"
+      - "WLN Enhancements"
       - EdgeSmokeFeatures
     risk_multiplier: medium
 
@@ -118,6 +124,9 @@ sub_paths:
       - IndigoTrdTypeahead
       - TCOSectionEdge
       - TCOSectionWln
+      - "Search Platform WLN"
+      - "WLN Core User Scenarios"
+      - "WLN Enhancements"
       - EdgeSmokeFeatures
 
   # ── WLN Typeahead ────────────────────────────────────────────────────────────
@@ -133,6 +142,9 @@ sub_paths:
       - IndigoTrdTypeahead
       - TCOSectionEdge
       - TCOSectionWln
+      - "Search Platform WLN"
+      - "WLN Core User Scenarios"
+      - "WLN Enhancements"
       - EdgeSmokeFeatures
 
   "WLNTypeahead/WebContent/":
@@ -289,6 +301,32 @@ keywords:
       - IndigoTrdTypeahead
       - TCOSectionEdge
       - TCOSectionWln
+      - EdgeSmokeFeatures
+
+  "search platform":
+    product: WestlawNext
+    test_categories:
+      - "Search Platform WLN"
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - EdgeSmokeFeatures
+
+  "wln core":
+    product: WestlawNext
+    test_categories:
+      - "WLN Core User Scenarios"
+      - "WLN Enhancements"
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  "wln enhancements":
+    product: WestlawNext
+    test_categories:
+      - "WLN Enhancements"
+      - "WLN Core User Scenarios"
+      - CoreSearch
       - EdgeSmokeFeatures
 
 # ──────────────────────────────────────────────────────────────────────────────

@@ -35,8 +35,8 @@
 #   eReaderFoldering/       eReader foldering module
 ################################################################################
 
-version: "2.0"
-last_updated: "2026-06-17"
+version: "3.0"
+last_updated: "2026-06-18"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # MODULE MAPPINGS  (key = top-level folder name in cobalt_foldering)
@@ -61,6 +61,7 @@ modules:
       - SmartFolders
       - AnzFoldering
       - SaveSnippet_Edge
+      - "Private Files"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -80,6 +81,7 @@ modules:
       - SmartFolders
       - AnzFoldering
       - SaveSnippet_Edge
+      - "Private Files"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -210,6 +212,7 @@ sub_paths:
       - SmartFolders
       - AnzFoldering
       - SaveSnippet_Edge
+      - "Private Files"
       - EdgeSmokeFeatures
 
   "Foldering/WebContent/":
@@ -257,6 +260,7 @@ sub_paths:
       - SmartFolders
       - AnzFoldering
       - SaveSnippet_Edge
+      - "Private Files"
       - EdgeSmokeFeatures
 
   # ── Foldering Serialized ─────────────────────────────────────────────────────
@@ -560,6 +564,21 @@ keywords:
     product: Foldering
     test_categories:
       - SaveSnippet_Edge
+      - Foldering
+      - EdgeSmokeFeatures
+
+  "private files":
+    product: Foldering
+    test_categories:
+      - "Private Files"
+      - Foldering
+      - ResearchOrganizer
+      - EdgeSmokeFeatures
+
+  "private":
+    product: Foldering
+    test_categories:
+      - "Private Files"
       - Foldering
       - EdgeSmokeFeatures
 

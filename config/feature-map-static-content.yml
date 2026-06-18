@@ -31,8 +31,8 @@
 #       adjust entries as needed.
 ################################################################################
 
-version: "3.0"
-last_updated: "2026-06-17"
+version: "4.0"
+last_updated: "2026-06-18"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # MODULE MAPPINGS  (key = top-level folder name in cobalt_static-content)
@@ -50,6 +50,10 @@ modules:
       - WebsiteMisc
       - CoreSearch
       - GlobalSearch
+      - "BLC Core Regression"
+      - "Edge Modules Smoke"
+      - "Global Navigation"
+      - "Home Page"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -71,6 +75,14 @@ modules:
       - WestlawTodayAlerts
       - CopyCitationEdge_Regression
       - CopyCitationWln_Regression
+      - "BLC Core Regression"
+      - "Edge Modules Smoke"
+      - "Find & Print"
+      - "Global Navigation"
+      - "Home Page"
+      - "Preferences"
+      - "Related Information UI Platform"
+      - "Westlaw Today"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -147,6 +159,8 @@ modules:
       - PrPSynopsisDelivery
       - ResearchReportsDelivery
       - RelatedInfoDelivery
+      - "Find & Print"
+      - "Portal Manager Find & Print"
       - EdgeSmokeFeatures
     risk_multiplier: medium
 
@@ -168,6 +182,8 @@ modules:
       - Alerts
       - AlertsAdmin
       - AnzAlerts
+      - "Alerts UI UK"
+      - "Westlaw Today"
       - EdgeSmokeFeatures
     risk_multiplier: medium
 
@@ -204,6 +220,8 @@ modules:
       - ResearchOutlineBuilder
       - ParallelSearch
       - LitigationAnalytics
+      - "Edge 2.0 Smoke Tests (Westlaw Precision)"
+      - "Westlaw Advantage"
       - EdgeSmokeFeatures
     risk_multiplier: medium
 
@@ -239,6 +257,8 @@ modules:
       - NegativeHistory
       - ImpliedOverrulings
       - RepealedFacets
+      - "Inline KeyCite Flags"
+      - "Related Information UI Platform"
       - EdgeSmokeFeatures
     risk_multiplier: medium
 
@@ -1429,6 +1449,7 @@ keywords:
     product: Alerts
     test_categories:
       - WestlawTodayAlerts
+      - "Westlaw Today"
       - AlertAccess
       - EdgeSmokeFeatures
 
@@ -1436,6 +1457,7 @@ keywords:
     product: Alerts
     test_categories:
       - WestlawTodayAlerts
+      - "Westlaw Today"
       - AlertAccess
       - EdgeSmokeFeatures
 
@@ -1552,6 +1574,107 @@ keywords:
     test_categories:
       - WestKm
       - CoreSearch
+      - EdgeSmokeFeatures
+
+  "global navigation":
+    product: Website
+    test_categories:
+      - "Global Navigation"
+      - CoreWebsite
+      - WebsiteCore1
+      - WebsiteCore2
+      - EdgeSmokeFeatures
+
+  "home page":
+    product: Website
+    test_categories:
+      - "Home Page"
+      - CoreWebsite
+      - WebsiteCore1
+      - EdgeSmokeFeatures
+
+  preferences:
+    product: WestlawNext
+    test_categories:
+      - "Preferences"
+      - CoreWebsite
+      - WebsiteCore1
+      - EdgeSmokeFeatures
+
+  "edge modules smoke":
+    product: WestlawNext
+    test_categories:
+      - "Edge Modules Smoke"
+      - EdgeSmokeFeatures
+
+  "edge 2.0":
+    product: WestlawPrecision
+    test_categories:
+      - "Edge 2.0 Smoke Tests (Westlaw Precision)"
+      - EdgeSmoke2.0
+      - WestlawPrecision1
+      - WestlawPrecision2
+      - EdgeSmokeFeatures
+
+  "westlaw advantage":
+    product: WestlawAdvantage
+    test_categories:
+      - "Westlaw Advantage"
+      - WestlawPrecision1
+      - WestlawPrecision2
+      - WestlawPrecision3
+      - WestlawPrecision4
+      - WestlawPrecision5
+      - WestlawPrecision6
+      - EdgeSmokeFeatures
+
+  "find and print":
+    product: Delivery
+    test_categories:
+      - "Find & Print"
+      - "Portal Manager Find & Print"
+      - WebsiteDelivery
+      - DOCX
+      - EdgeSmokeFeatures
+
+  "find & print":
+    product: Delivery
+    test_categories:
+      - "Find & Print"
+      - "Portal Manager Find & Print"
+      - WebsiteDelivery
+      - DOCX
+      - EdgeSmokeFeatures
+
+  "inline keycite":
+    product: KeyCite
+    test_categories:
+      - "Inline KeyCite Flags"
+      - RelatedInfoFlags
+      - RelatedInfoKeyciteCommand
+      - EdgeSmokeFeatures
+
+  "related information":
+    product: RelatedInfo
+    test_categories:
+      - "Related Information UI Platform"
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - EdgeSmokeFeatures
+
+  "alerts uk":
+    product: Alerts
+    test_categories:
+      - "Alerts UI UK"
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  "blc core":
+    product: BusinessLawCenter
+    test_categories:
+      - "BLC Core Regression"
+      - BLCCommon
       - EdgeSmokeFeatures
 
 # ──────────────────────────────────────────────────────────────────────────────

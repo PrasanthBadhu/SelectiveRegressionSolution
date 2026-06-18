@@ -20,8 +20,8 @@
 #           -> WL_DNet_*.yml workflows
 ################################################################################
 
-version: "5.0"
-last_updated: "2026-06-17"
+version: "6.0"
+last_updated: "2026-06-18"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # MODULE MAPPINGS
@@ -56,6 +56,23 @@ modules:
       - FavoriteSearches
       - CustomDigestSearch
       - NextMissingTerms
+      - "Arbitration II"
+      - "BLC Core Regression"
+      - "Company Investigator Core"
+      - "Data Orchestration Core Platform"
+      - "Dockets Gateway"
+      - "New York Official Digest"
+      - "Practical Law US"
+      - "Professional Profiles"
+      - "Professional Reports"
+      - "Public Utility Commissions"
+      - "Recent Filters"
+      - "Search Platform WLN"
+      - "Search Results Modernization - Daily"
+      - "Search Results Modernization - Weekly"
+      - "SearchFacets"
+      - "WLN Core User Scenarios"
+      - "WLN Enhancements"
     risk_multiplier: high
 
   SearchMetadataObjects:
@@ -110,6 +127,23 @@ modules:
       - FavoriteSearches
       - CustomDigestSearch
       - NextMissingTerms
+      - "Arbitration II"
+      - "BLC Core Regression"
+      - "Company Investigator Core"
+      - "Data Orchestration Core Platform"
+      - "Dockets Gateway"
+      - "New York Official Digest"
+      - "Practical Law US"
+      - "Professional Profiles"
+      - "Professional Reports"
+      - "Public Utility Commissions"
+      - "Recent Filters"
+      - "Search Platform WLN"
+      - "Search Results Modernization - Daily"
+      - "Search Results Modernization - Weekly"
+      - "SearchFacets"
+      - "WLN Core User Scenarios"
+      - "WLN Enhancements"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -182,6 +216,23 @@ modules:
       - ProceduralPosture
       - SecondarySources
       - BasicQnA
+      - "Arbitration II"
+      - "BLC Core Regression"
+      - "Company Investigator Core"
+      - "Data Orchestration Core Platform"
+      - "Dockets Gateway"
+      - "New York Official Digest"
+      - "Practical Law US"
+      - "Professional Profiles"
+      - "Professional Reports"
+      - "Public Utility Commissions"
+      - "Recent Filters"
+      - "Search Platform WLN"
+      - "Search Results Modernization - Daily"
+      - "Search Results Modernization - Weekly"
+      - "SearchFacets"
+      - "WLN Core User Scenarios"
+      - "WLN Enhancements"
       - EdgeSmokeFeatures
     risk_multiplier: medium
 
@@ -387,6 +438,7 @@ keywords:
       - SecFilingsSectionSearchFandQdocuments
       - SecFilingsSectionSearchKdocuments
       - SectionSearch
+      - "BLC Core Regression"
 
   "business law":
     product: BusinessLawCenter
@@ -400,6 +452,7 @@ keywords:
     product: Dockets
     test_categories:
       - DocketTests
+      - "Dockets Gateway"
 
   keycite:
     product: KeyCite
@@ -788,6 +841,124 @@ keywords:
       - Aug2025-Transition
       - AnzEdgeRegression
       - AnzWebsite
+      - EdgeSmokeFeatures
+
+  "search platform":
+    product: WestlawNext
+    test_categories:
+      - "Search Platform WLN"
+      - CoreSearch
+      - GlobalSearch
+      - SearchCore
+      - EdgeSmokeFeatures
+
+  "search results modernization":
+    product: Search
+    test_categories:
+      - "Search Results Modernization - Daily"
+      - "Search Results Modernization - Weekly"
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  "search facets":
+    product: Search
+    test_categories:
+      - "SearchFacets"
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "data orchestration":
+    product: Search
+    test_categories:
+      - "Data Orchestration Core Platform"
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "dockets gateway":
+    product: Dockets
+    test_categories:
+      - "Dockets Gateway"
+      - DocketTests
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "professional profiles":
+    product: WestlawNext
+    test_categories:
+      - "Professional Profiles"
+      - "Professional Reports"
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "professional reports":
+    product: WestlawNext
+    test_categories:
+      - "Professional Reports"
+      - "Professional Profiles"
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "recent filters":
+    product: Search
+    test_categories:
+      - "Recent Filters"
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  "wln enhancements":
+    product: WestlawNext
+    test_categories:
+      - "WLN Enhancements"
+      - "WLN Core User Scenarios"
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  "wln core user":
+    product: WestlawNext
+    test_categories:
+      - "WLN Core User Scenarios"
+      - "WLN Enhancements"
+      - CoreSearch
+      - GlobalSearch
+      - EdgeSmokeFeatures
+
+  "company investigator":
+    product: Search
+    test_categories:
+      - "Company Investigator Core"
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "practical law":
+    product: Search
+    test_categories:
+      - "Practical Law US"
+      - CoreSearch
+      - BrowsePageSearch
+      - EdgeSmokeFeatures
+
+  "public utility":
+    product: Search
+    test_categories:
+      - "Public Utility Commissions"
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  "new york digest":
+    product: Search
+    test_categories:
+      - "New York Official Digest"
+      - CoreSearch
+      - EdgeSmokeFeatures
+
+  arbitration:
+    product: Search
+    test_categories:
+      - "Arbitration II"
+      - CoreSearch
       - EdgeSmokeFeatures
 
 # ──────────────────────────────────────────────────────────────────────────────

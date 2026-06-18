@@ -41,8 +41,8 @@
 #   LoggingConfig/          Logging configuration
 ################################################################################
 
-version: "2.0"
-last_updated: "2026-06-17"
+version: "3.0"
+last_updated: "2026-06-16"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # MODULE MAPPINGS  (key = top-level folder name in cobalt_alert)
@@ -63,6 +63,35 @@ modules:
       - AnalyticsAlertsEnhancements
       - WestlawTodayAlerts
       - CustomDigestSearch
+      - "Alerts Admin 1"
+      - "Alerts Admin 2"
+      - "Alerts Admin 3"
+      - "Alerts Admin 4"
+      - "Alerts Admin Edge"
+      - "Alerts Admin-Bulk"
+      - "Alerts Alert Center"
+      - "Alerts Alert Center-Monthly"
+      - "Alerts Company Investigator"
+      - "Alerts Court Wire"
+      - "Alerts Docket Alert"
+      - "Alerts Docket Track"
+      - "Alerts Email Delivery"
+      - "Alerts Engine BLC"
+      - "Alerts Engine Capitol Watch"
+      - "Alerts Engine Court Wire"
+      - "Alerts Engine Digest"
+      - "Alerts Engine Docket"
+      - "Alerts Engine DocketTrack"
+      - "Alerts Engine KeyCite"
+      - "Alerts Engine Publication"
+      - "Alerts Engine Report"
+      - "Alerts Engine UK"
+      - "Alerts Engine WestClip"
+      - "Alerts KeyCite"
+      - "Alerts Newsletter"
+      - "Alerts UI UK"
+      - "Alerts WestClip"
+      - "Westlaw Today"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -78,6 +107,35 @@ modules:
       - AnalyticsAlertsEnhancements
       - WestlawTodayAlerts
       - CustomDigestSearch
+      - "Alerts Admin 1"
+      - "Alerts Admin 2"
+      - "Alerts Admin 3"
+      - "Alerts Admin 4"
+      - "Alerts Admin Edge"
+      - "Alerts Admin-Bulk"
+      - "Alerts Alert Center"
+      - "Alerts Alert Center-Monthly"
+      - "Alerts Company Investigator"
+      - "Alerts Court Wire"
+      - "Alerts Docket Alert"
+      - "Alerts Docket Track"
+      - "Alerts Email Delivery"
+      - "Alerts Engine BLC"
+      - "Alerts Engine Capitol Watch"
+      - "Alerts Engine Court Wire"
+      - "Alerts Engine Digest"
+      - "Alerts Engine Docket"
+      - "Alerts Engine DocketTrack"
+      - "Alerts Engine KeyCite"
+      - "Alerts Engine Publication"
+      - "Alerts Engine Report"
+      - "Alerts Engine UK"
+      - "Alerts Engine WestClip"
+      - "Alerts KeyCite"
+      - "Alerts Newsletter"
+      - "Alerts UI UK"
+      - "Alerts WestClip"
+      - "Westlaw Today"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -92,6 +150,35 @@ modules:
       - AnzAlerts
       - WestlawTodayAlerts
       - CustomDigestSearch
+      - "Alerts Admin 1"
+      - "Alerts Admin 2"
+      - "Alerts Admin 3"
+      - "Alerts Admin 4"
+      - "Alerts Admin Edge"
+      - "Alerts Admin-Bulk"
+      - "Alerts Alert Center"
+      - "Alerts Alert Center-Monthly"
+      - "Alerts Company Investigator"
+      - "Alerts Court Wire"
+      - "Alerts Docket Alert"
+      - "Alerts Docket Track"
+      - "Alerts Email Delivery"
+      - "Alerts Engine BLC"
+      - "Alerts Engine Capitol Watch"
+      - "Alerts Engine Court Wire"
+      - "Alerts Engine Digest"
+      - "Alerts Engine Docket"
+      - "Alerts Engine DocketTrack"
+      - "Alerts Engine KeyCite"
+      - "Alerts Engine Publication"
+      - "Alerts Engine Report"
+      - "Alerts Engine UK"
+      - "Alerts Engine WestClip"
+      - "Alerts KeyCite"
+      - "Alerts Newsletter"
+      - "Alerts UI UK"
+      - "Alerts WestClip"
+      - "Westlaw Today"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -103,6 +190,22 @@ modules:
       - Alerts
       - AlertsAdmin
       - AnzAlerts
+      - "Alerts Court Wire"
+      - "Alerts Docket Alert"
+      - "Alerts Docket Track"
+      - "Alerts Engine BLC"
+      - "Alerts Engine Capitol Watch"
+      - "Alerts Engine Court Wire"
+      - "Alerts Engine Digest"
+      - "Alerts Engine Docket"
+      - "Alerts Engine DocketTrack"
+      - "Alerts Engine KeyCite"
+      - "Alerts Engine Publication"
+      - "Alerts Engine Report"
+      - "Alerts Engine UK"
+      - "Alerts Engine WestClip"
+      - "Alerts KeyCite"
+      - "Alerts WestClip"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -117,6 +220,35 @@ modules:
       - AnzAlerts
       - WestlawTodayAlerts
       - CustomDigestSearch
+      - "Alerts Admin 1"
+      - "Alerts Admin 2"
+      - "Alerts Admin 3"
+      - "Alerts Admin 4"
+      - "Alerts Admin Edge"
+      - "Alerts Admin-Bulk"
+      - "Alerts Alert Center"
+      - "Alerts Alert Center-Monthly"
+      - "Alerts Company Investigator"
+      - "Alerts Court Wire"
+      - "Alerts Docket Alert"
+      - "Alerts Docket Track"
+      - "Alerts Email Delivery"
+      - "Alerts Engine BLC"
+      - "Alerts Engine Capitol Watch"
+      - "Alerts Engine Court Wire"
+      - "Alerts Engine Digest"
+      - "Alerts Engine Docket"
+      - "Alerts Engine DocketTrack"
+      - "Alerts Engine KeyCite"
+      - "Alerts Engine Publication"
+      - "Alerts Engine Report"
+      - "Alerts Engine UK"
+      - "Alerts Engine WestClip"
+      - "Alerts KeyCite"
+      - "Alerts Newsletter"
+      - "Alerts UI UK"
+      - "Alerts WestClip"
+      - "Westlaw Today"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -217,6 +349,20 @@ modules:
       - CapitolWatch
       - WestlawTodayAlerts
       - CustomDigestSearch
+      - "Alerts Admin 1"
+      - "Alerts Admin 2"
+      - "Alerts Admin 3"
+      - "Alerts Admin 4"
+      - "Alerts Admin Edge"
+      - "Alerts Alert Center"
+      - "Alerts Alert Center-Monthly"
+      - "Alerts Company Investigator"
+      - "Alerts Email Delivery"
+      - "Alerts Engine KeyCite"
+      - "Alerts KeyCite"
+      - "Alerts UI UK"
+      - "Alerts WestClip"
+      - "Westlaw Today"
       - EdgeSmokeFeatures
     risk_multiplier: medium
 
@@ -251,6 +397,35 @@ sub_paths:
       - AnalyticsAlertsEnhancements
       - WestlawTodayAlerts
       - CustomDigestSearch
+      - "Alerts Admin 1"
+      - "Alerts Admin 2"
+      - "Alerts Admin 3"
+      - "Alerts Admin 4"
+      - "Alerts Admin Edge"
+      - "Alerts Admin-Bulk"
+      - "Alerts Alert Center"
+      - "Alerts Alert Center-Monthly"
+      - "Alerts Company Investigator"
+      - "Alerts Court Wire"
+      - "Alerts Docket Alert"
+      - "Alerts Docket Track"
+      - "Alerts Email Delivery"
+      - "Alerts Engine BLC"
+      - "Alerts Engine Capitol Watch"
+      - "Alerts Engine Court Wire"
+      - "Alerts Engine Digest"
+      - "Alerts Engine Docket"
+      - "Alerts Engine DocketTrack"
+      - "Alerts Engine KeyCite"
+      - "Alerts Engine Publication"
+      - "Alerts Engine Report"
+      - "Alerts Engine UK"
+      - "Alerts Engine WestClip"
+      - "Alerts KeyCite"
+      - "Alerts Newsletter"
+      - "Alerts UI UK"
+      - "Alerts WestClip"
+      - "Westlaw Today"
       - EdgeSmokeFeatures
 
   "Alert/WebContent/":
@@ -282,6 +457,35 @@ sub_paths:
       - AnalyticsAlertsEnhancements
       - WestlawTodayAlerts
       - CustomDigestSearch
+      - "Alerts Admin 1"
+      - "Alerts Admin 2"
+      - "Alerts Admin 3"
+      - "Alerts Admin 4"
+      - "Alerts Admin Edge"
+      - "Alerts Admin-Bulk"
+      - "Alerts Alert Center"
+      - "Alerts Alert Center-Monthly"
+      - "Alerts Company Investigator"
+      - "Alerts Court Wire"
+      - "Alerts Docket Alert"
+      - "Alerts Docket Track"
+      - "Alerts Email Delivery"
+      - "Alerts Engine BLC"
+      - "Alerts Engine Capitol Watch"
+      - "Alerts Engine Court Wire"
+      - "Alerts Engine Digest"
+      - "Alerts Engine Docket"
+      - "Alerts Engine DocketTrack"
+      - "Alerts Engine KeyCite"
+      - "Alerts Engine Publication"
+      - "Alerts Engine Report"
+      - "Alerts Engine UK"
+      - "Alerts Engine WestClip"
+      - "Alerts KeyCite"
+      - "Alerts Newsletter"
+      - "Alerts UI UK"
+      - "Alerts WestClip"
+      - "Westlaw Today"
       - EdgeSmokeFeatures
 
   # ── Alert Processor ──────────────────────────────────────────────────────────
@@ -296,6 +500,35 @@ sub_paths:
       - AnzAlerts
       - WestlawTodayAlerts
       - CustomDigestSearch
+      - "Alerts Admin 1"
+      - "Alerts Admin 2"
+      - "Alerts Admin 3"
+      - "Alerts Admin 4"
+      - "Alerts Admin Edge"
+      - "Alerts Admin-Bulk"
+      - "Alerts Alert Center"
+      - "Alerts Alert Center-Monthly"
+      - "Alerts Company Investigator"
+      - "Alerts Court Wire"
+      - "Alerts Docket Alert"
+      - "Alerts Docket Track"
+      - "Alerts Email Delivery"
+      - "Alerts Engine BLC"
+      - "Alerts Engine Capitol Watch"
+      - "Alerts Engine Court Wire"
+      - "Alerts Engine Digest"
+      - "Alerts Engine Docket"
+      - "Alerts Engine DocketTrack"
+      - "Alerts Engine KeyCite"
+      - "Alerts Engine Publication"
+      - "Alerts Engine Report"
+      - "Alerts Engine UK"
+      - "Alerts Engine WestClip"
+      - "Alerts KeyCite"
+      - "Alerts Newsletter"
+      - "Alerts UI UK"
+      - "Alerts WestClip"
+      - "Westlaw Today"
       - EdgeSmokeFeatures
 
   "AlertProcessor/integration/":
@@ -314,6 +547,22 @@ sub_paths:
       - Alerts
       - AlertsAdmin
       - AnzAlerts
+      - "Alerts Court Wire"
+      - "Alerts Docket Alert"
+      - "Alerts Docket Track"
+      - "Alerts Engine BLC"
+      - "Alerts Engine Capitol Watch"
+      - "Alerts Engine Court Wire"
+      - "Alerts Engine Digest"
+      - "Alerts Engine Docket"
+      - "Alerts Engine DocketTrack"
+      - "Alerts Engine KeyCite"
+      - "Alerts Engine Publication"
+      - "Alerts Engine Report"
+      - "Alerts Engine UK"
+      - "Alerts Engine WestClip"
+      - "Alerts KeyCite"
+      - "Alerts WestClip"
       - EdgeSmokeFeatures
 
   # ── Alert Product Service ────────────────────────────────────────────────────
@@ -328,6 +577,35 @@ sub_paths:
       - AnzAlerts
       - WestlawTodayAlerts
       - CustomDigestSearch
+      - "Alerts Admin 1"
+      - "Alerts Admin 2"
+      - "Alerts Admin 3"
+      - "Alerts Admin 4"
+      - "Alerts Admin Edge"
+      - "Alerts Admin-Bulk"
+      - "Alerts Alert Center"
+      - "Alerts Alert Center-Monthly"
+      - "Alerts Company Investigator"
+      - "Alerts Court Wire"
+      - "Alerts Docket Alert"
+      - "Alerts Docket Track"
+      - "Alerts Email Delivery"
+      - "Alerts Engine BLC"
+      - "Alerts Engine Capitol Watch"
+      - "Alerts Engine Court Wire"
+      - "Alerts Engine Digest"
+      - "Alerts Engine Docket"
+      - "Alerts Engine DocketTrack"
+      - "Alerts Engine KeyCite"
+      - "Alerts Engine Publication"
+      - "Alerts Engine Report"
+      - "Alerts Engine UK"
+      - "Alerts Engine WestClip"
+      - "Alerts KeyCite"
+      - "Alerts Newsletter"
+      - "Alerts UI UK"
+      - "Alerts WestClip"
+      - "Westlaw Today"
       - EdgeSmokeFeatures
 
   # ── Alert Serialized ─────────────────────────────────────────────────────────
@@ -407,6 +685,20 @@ sub_paths:
       - CapitolWatch
       - WestlawTodayAlerts
       - CustomDigestSearch
+      - "Alerts Admin 1"
+      - "Alerts Admin 2"
+      - "Alerts Admin 3"
+      - "Alerts Admin 4"
+      - "Alerts Admin Edge"
+      - "Alerts Alert Center"
+      - "Alerts Alert Center-Monthly"
+      - "Alerts Company Investigator"
+      - "Alerts Email Delivery"
+      - "Alerts Engine KeyCite"
+      - "Alerts KeyCite"
+      - "Alerts UI UK"
+      - "Alerts WestClip"
+      - "Westlaw Today"
       - EdgeSmokeFeatures
 
   "WLNAlert/EndpointTests/":
@@ -576,6 +868,7 @@ keywords:
     product: Alerts
     test_categories:
       - WestlawTodayAlerts
+      - "Westlaw Today"
       - AlertAccess
       - EdgeSmokeFeatures
 
@@ -583,6 +876,7 @@ keywords:
     product: Alerts
     test_categories:
       - WestlawTodayAlerts
+      - "Westlaw Today"
       - AlertAccess
       - EdgeSmokeFeatures
 
@@ -598,6 +892,118 @@ keywords:
     product: Alerts
     test_categories:
       - CustomDigestSearch
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  "alert admin":
+    product: Alerts
+    test_categories:
+      - "Alerts Admin 1"
+      - "Alerts Admin 2"
+      - "Alerts Admin 3"
+      - "Alerts Admin 4"
+      - "Alerts Admin Edge"
+      - "Alerts Admin-Bulk"
+      - AlertsAdmin
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  "alert center":
+    product: Alerts
+    test_categories:
+      - "Alerts Alert Center"
+      - "Alerts Alert Center-Monthly"
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  "court wire":
+    product: Alerts
+    test_categories:
+      - "Alerts Court Wire"
+      - "Alerts Engine Court Wire"
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  "docket alert":
+    product: Alerts
+    test_categories:
+      - "Alerts Docket Alert"
+      - "Alerts Docket Track"
+      - "Alerts Engine Docket"
+      - "Alerts Engine DocketTrack"
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  westclip:
+    product: Alerts
+    test_categories:
+      - "Alerts WestClip"
+      - "Alerts Engine WestClip"
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  "email delivery":
+    product: Alerts
+    test_categories:
+      - "Alerts Email Delivery"
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  newsletter:
+    product: Alerts
+    test_categories:
+      - "Alerts Newsletter"
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  "company investigator":
+    product: Alerts
+    test_categories:
+      - "Alerts Company Investigator"
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  "alert engine":
+    product: Alerts
+    test_categories:
+      - "Alerts Engine BLC"
+      - "Alerts Engine Capitol Watch"
+      - "Alerts Engine Court Wire"
+      - "Alerts Engine Digest"
+      - "Alerts Engine Docket"
+      - "Alerts Engine DocketTrack"
+      - "Alerts Engine KeyCite"
+      - "Alerts Engine Publication"
+      - "Alerts Engine Report"
+      - "Alerts Engine UK"
+      - "Alerts Engine WestClip"
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  "keycite alert":
+    product: Alerts
+    test_categories:
+      - "Alerts KeyCite"
+      - "Alerts Engine KeyCite"
+      - AlertAccess
+      - Alerts
+      - EdgeSmokeFeatures
+
+  "uk alert":
+    product: Alerts
+    test_categories:
+      - "Alerts UI UK"
+      - "Alerts Engine UK"
       - AlertAccess
       - Alerts
       - EdgeSmokeFeatures

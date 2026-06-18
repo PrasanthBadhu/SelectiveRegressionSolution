@@ -33,8 +33,8 @@
 #   WestKMRelatedInfo/        West Key Number related info module
 ################################################################################
 
-version: "1.0"
-last_updated: "2026-06-17"
+version: "2.0"
+last_updated: "2026-06-18"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # MODULE MAPPINGS  (key = top-level folder name in cobalt_relatedinfo)
@@ -59,6 +59,13 @@ modules:
       - GraphicalHistory
       - CitingReferences
       - NegativeHistory
+      - "Alerts Engine KeyCite"
+      - "Alerts KeyCite"
+      - "Inline KeyCite Flags"
+      - "Related Documents"
+      - "Related Information Copy With Reference"
+      - "Related Information UI Platform"
+      - "SearchFacets"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -99,6 +106,13 @@ modules:
       - GraphicalHistory
       - CitingReferences
       - NegativeHistory
+      - "Alerts Engine KeyCite"
+      - "Alerts KeyCite"
+      - "Inline KeyCite Flags"
+      - "Related Documents"
+      - "Related Information Copy With Reference"
+      - "Related Information UI Platform"
+      - "SearchFacets"
       - EdgeSmokeFeatures
     risk_multiplier: high
 
@@ -194,6 +208,13 @@ sub_paths:
       - GraphicalHistory
       - CitingReferences
       - NegativeHistory
+      - "Alerts Engine KeyCite"
+      - "Alerts KeyCite"
+      - "Inline KeyCite Flags"
+      - "Related Documents"
+      - "Related Information Copy With Reference"
+      - "Related Information UI Platform"
+      - "SearchFacets"
       - EdgeSmokeFeatures
 
   "RelatedInfo/GraphicalKeyciteTests/":
@@ -251,6 +272,13 @@ sub_paths:
       - GraphicalHistory
       - CitingReferences
       - NegativeHistory
+      - "Alerts Engine KeyCite"
+      - "Alerts KeyCite"
+      - "Inline KeyCite Flags"
+      - "Related Documents"
+      - "Related Information Copy With Reference"
+      - "Related Information UI Platform"
+      - "SearchFacets"
       - EdgeSmokeFeatures
 
   "WLNRelatedInfo/EndpointTests/":
@@ -509,6 +537,58 @@ keywords:
     test_categories:
       - RelatedInfoContent
       - RelatedInfoTabs
+      - EdgeSmokeFeatures
+
+  "inline keycite":
+    product: KeyCite
+    test_categories:
+      - "Inline KeyCite Flags"
+      - RelatedInfoFlags
+      - RelatedInfoKeyciteCommand
+      - EdgeSmokeFeatures
+
+  "search facets":
+    product: RelatedInfo
+    test_categories:
+      - "SearchFacets"
+      - RelatedInfoFacets
+      - RelatedInfoContent
+      - EdgeSmokeFeatures
+
+  "related documents":
+    product: RelatedInfo
+    test_categories:
+      - "Related Documents"
+      - "Related Information Copy With Reference"
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - EdgeSmokeFeatures
+
+  "copy with reference":
+    product: RelatedInfo
+    test_categories:
+      - "Related Information Copy With Reference"
+      - "Related Documents"
+      - RelatedInfoContent
+      - EdgeSmokeFeatures
+
+  "related information":
+    product: RelatedInfo
+    test_categories:
+      - "Related Documents"
+      - "Related Information Copy With Reference"
+      - "Related Information UI Platform"
+      - RelatedInfoContent
+      - RelatedInfoDelivery
+      - EdgeSmokeFeatures
+
+  "keycite alerts":
+    product: KeyCite
+    test_categories:
+      - "Alerts KeyCite"
+      - "Alerts Engine KeyCite"
+      - RelatedInfoKeyciteCommand
+      - RelatedInfoFlags
       - EdgeSmokeFeatures
 
 # ──────────────────────────────────────────────────────────────────────────────
