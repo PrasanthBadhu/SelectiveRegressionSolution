@@ -16,8 +16,7 @@ Changes vs. original:
   - Added  --force-prs (comma-separated PR numbers)  to force re-analysis without SHA change
   - All detection logic is UNCHANGED (same module prefixes, risk heuristics, etc.)
 
-Called by: pr-watcher.yml (scheduled/manual)
-Also used by: pr-poller.yml (merged-PR path, existing behaviour preserved)
+Called by: pr-poller.yml (merged-PR path)
 """
 
 import os, sys, json, re, argparse
