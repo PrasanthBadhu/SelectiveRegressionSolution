@@ -435,15 +435,22 @@ def resolve_suites(impact: dict, feature_map: dict) -> dict:
 
 
 def _build_result(impact, test_categories, skip_all, reason) -> dict:
-    # TestCategory names -> workflow names
-    workflows = []
+    # DNet: TestCategory -> WL_DNet workflow names
+    dotnet_workflows = []
     for cat in sorted(test_categories):
         for wf in CAT_TO_WORKFLOW.get(cat, []):
-            if wf not in workflows:
-                workflows.append(wf)
+            if wf not in dotnet_workflows:
+                dotnet_workflows.append(wf)
 
-    if not skip_all and not workflows:
-        workflows = ["WL_DNet_Edge_CoreSearch", "WL_DNet_Edge_Smoke_Features"]
+    # Java: TestCategory -> WL_Java workflow names
+    java_workflows = []
+    for cat in sorted(test_categories):
+        for wf in JAVA_CAT_TO_WORKFLOW.get(cat, []):
+            if wf not in java_workflows:
+                java_workflows.append(wf)
+
+    if not skip_all and not dotnet_workflows:
+        dotnet_workflows = ["WL_DNet_Edge_CoreSearch", "WL_DNet_Edge_Smoke_Features"]
 
     return {
         "pr_number":        impact.get("pr_number"),
@@ -455,7 +462,8 @@ def _build_result(impact, test_categories, skip_all, reason) -> dict:
         "modules":          impact.get("modules_affected", []),
         "products":         impact.get("all_products", []),
         "test_categories":  sorted(test_categories),
-        "dotnet_workflows": sorted(set(workflows)),
+        "dotnet_workflows": sorted(set(dotnet_workflows)),
+        "java_workflows":   sorted(set(java_workflows)),
         "skip_all":         skip_all,
         "reason":           reason,
     }
@@ -493,10 +501,11 @@ def main():
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(result, indent=2))
 
-    print(f"PR #{result['pr_number']}: {len(result['dotnet_workflows'])} workflows [{result['risk_level'].upper()}]")
-    print(f"  TestCategories : {', '.join(result['test_categories'])}")
-    print(f"  Workflows      : {', '.join(result['dotnet_workflows'])}")
-    print(f"  Reason         : {result['reason']}")
+    print(f"PR #{result['pr_number']}: {len(result['dotnet_workflows'])} DNet + {len(result['java_workflows'])} Java workflows [{result['risk_level'].upper()}]")
+    print(f"  TestCategories  : {', '.join(result['test_categories'])}")
+    print(f"  DNet Workflows  : {', '.join(result['dotnet_workflows'])}")
+    print(f"  Java Workflows  : {', '.join(result['java_workflows'])}")
+    print(f"  Reason          : {result['reason']}")
 
 
 if __name__ == "__main__":

@@ -75,6 +75,15 @@ on:
           - DEMO
           - QED
           - QEDAWS
+      test_site:
+        description: "Test site for Java workflows (TEST_SITE). Only used by WL_Java_* workflows."
+        required: false
+        type: choice
+        default: "main"
+        options:
+          - main
+          - use1
+          - use2
       max_prs:
         description: "Max PRs to process per repo (prevents timeout on broad date ranges). Default: 100."
         required: false
@@ -534,8 +543,9 @@ jobs:
           prs       = json.loads(Path("state/prs_discovered.json").read_text())
           plans_dir = Path("state/test_plans")
           plans_dir.mkdir(parents=True, exist_ok=True)
-          all_wf     = set()
-          plan_count = 0
+          all_dotnet_wf = set()
+          all_java_wf   = set()
+          plan_count    = 0
 
           for pr_info in prs:
               pr_num    = pr_info["number"]
@@ -565,21 +575,29 @@ jobs:
 
               plan = json.loads(plan_file.read_text())
               if not plan.get("skip_all"):
-                  all_wf.update(plan.get("dotnet_workflows", []))
+                  all_dotnet_wf.update(plan.get("dotnet_workflows", []))
+                  all_java_wf.update(plan.get("java_workflows", []))
               plan_count += 1
               print(f"  {repo_name} PR #{pr_num}: "
-                    f"{len(plan.get('dotnet_workflows',[]))} workflow(s) "
+                    f"{len(plan.get('dotnet_workflows',[]))} DNet + "
+                    f"{len(plan.get('java_workflows',[]))} Java workflow(s) "
                     f"[{plan.get('risk_level','?').upper()}]")
 
-          Path("state/all_impacted_workflows.json").write_text(json.dumps(sorted(all_wf), indent=2))
+          Path("state/all_impacted_workflows.json").write_text(
+              json.dumps(sorted(all_dotnet_wf), indent=2))
+          Path("state/all_impacted_java_workflows.json").write_text(
+              json.dumps(sorted(all_java_wf), indent=2))
 
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
               f.write(f"plan_count={plan_count}\n")
-              f.write(f"workflow_count={len(all_wf)}\n")
+              f.write(f"workflow_count={len(all_dotnet_wf)}\n")
+              f.write(f"java_workflow_count={len(all_java_wf)}\n")
 
-          print(f"\nPlans built: {plan_count}  Unique workflows: {len(all_wf)}")
-          for wf in sorted(all_wf):
-              print(f"  -> {wf}.yml")
+          print(f"\nPlans built: {plan_count}  DNet: {len(all_dotnet_wf)}  Java: {len(all_java_wf)}")
+          for wf in sorted(all_dotnet_wf):
+              print(f"  [DNet] {wf}.yml")
+          for wf in sorted(all_java_wf):
+              print(f"  [Java] {wf}.yml")
           EOF
 
       # ── Step 5: Build per-file impact details (per-repo feature-map) ─────────
@@ -659,23 +677,25 @@ jobs:
           print(f"Wrote state/per_file_impacts.json ({len(report)} PR(s))")
           EOF
 
-      # ── Step 6: Dispatch WL_DNet_*.yml workflows directly ────────────────────
-      - name: Dispatch WL_DNet workflows
+      # ── Step 6: Dispatch WL_DNet_*.yml and WL_Java_*.yml workflows ──────────
+      - name: Dispatch regression workflows
         if: steps.discover.outputs.pr_count != '0'
         env:
-          GH_TOKEN: ${{ secrets.REGRESSION_TRIGGER_PAT }}
-          REPO:     tr/CobaltRegressionTesting
-          TEST_ENV: ${{ inputs.env }}
-          DRY_RUN:  ${{ inputs.dry_run }}
+          GH_TOKEN:  ${{ secrets.REGRESSION_TRIGGER_PAT }}
+          REPO:      tr/CobaltRegressionTesting
+          TEST_ENV:  ${{ inputs.env }}
+          TEST_SITE: ${{ inputs.test_site }}
+          DRY_RUN:   ${{ inputs.dry_run }}
         run: |
           python3 - <<'EOF'
           import json, os, subprocess, sys
           from pathlib import Path
 
-          repo     = os.environ["REPO"]
-          test_env = os.environ.get("TEST_ENV", "DEMO")
-          dry_run  = os.environ.get("DRY_RUN", "false").lower() == "true"
-          gh       = "gh"
+          repo      = os.environ["REPO"]
+          test_env  = os.environ.get("TEST_ENV",  "DEMO")
+          test_site = os.environ.get("TEST_SITE", "main")
+          dry_run   = os.environ.get("DRY_RUN", "false").lower() == "true"
+          gh        = "gh"
 
           if dry_run:
               print("DRY RUN — analysis complete, regression workflows will NOT be triggered.")
@@ -687,35 +707,33 @@ jobs:
           }
           dispatch_env = ENV_MAP.get(test_env, test_env.upper())
 
-          wf_json = Path("state/all_impacted_workflows.json")
-          if not wf_json.exists():
-              print("No impacted workflows file found.", file=sys.stderr)
-              sys.exit(0)
+          dotnet_json = Path("state/all_impacted_workflows.json")
+          java_json   = Path("state/all_impacted_java_workflows.json")
 
-          all_wf = json.loads(wf_json.read_text())
-          if not all_wf:
+          all_dotnet_wf = json.loads(dotnet_json.read_text()) if dotnet_json.exists() else []
+          all_java_wf   = json.loads(java_json.read_text())   if java_json.exists()   else []
+
+          if not all_dotnet_wf and not all_java_wf:
               print("No workflows to dispatch.")
               sys.exit(0)
 
           dispatched = 0
           failed     = 0
 
-          for wf in all_wf:
+          def dispatch(wf, extra_fields):
+              global dispatched, failed
               wf_file_name = f"{wf}.yml"
-
               if dry_run:
-                  print(f"  DRY  {wf_file_name} [{dispatch_env}]")
+                  fields_str = "  ".join(f"{k}={v}" for k, v in extra_fields.items())
+                  print(f"  DRY  {wf_file_name} [{fields_str}]")
                   dispatched += 1
-                  continue
-
-              cmd = [
-                  gh, "workflow", "run", wf_file_name,
-                  "--repo", repo,
-                  "-f", f"TEST_SITE_DotNet={dispatch_env}",
-              ]
+                  return
+              cmd = [gh, "workflow", "run", wf_file_name, "--repo", repo]
+              for k, v in extra_fields.items():
+                  cmd += ["-f", f"{k}={v}"]
               result = subprocess.run(cmd, capture_output=True, text=True)
               if result.returncode == 0:
-                  print(f"  OK  {wf_file_name}  (env={dispatch_env})")
+                  print(f"  OK  {wf_file_name}  ({' '.join(f'{k}={v}' for k,v in extra_fields.items())})")
                   dispatched += 1
               else:
                   err = result.stderr.strip()
@@ -725,6 +743,14 @@ jobs:
                   else:
                       print(f"  FAIL {wf_file_name}: {err}", file=sys.stderr)
                       failed += 1
+
+          # DNet workflows: only TEST_SITE_DotNet
+          for wf in all_dotnet_wf:
+              dispatch(wf, {"TEST_SITE_DotNet": dispatch_env})
+
+          # Java workflows: TEST_ENVIRONMENT + TEST_SITE
+          for wf in all_java_wf:
+              dispatch(wf, {"TEST_ENVIRONMENT": dispatch_env, "TEST_SITE": test_site})
 
           if dry_run:
               print(f"\nDRY RUN — {dispatched} workflow(s) analysed, none triggered.")
@@ -738,31 +764,35 @@ jobs:
       - name: Write job summary
         if: always()
         env:
-          PR_NUMBERS: ${{ inputs.pr_numbers }}
-          SCAN_DATE:  ${{ inputs.scan_date }}
-          DATE_FROM:  ${{ inputs.date_from }}
-          DATE_TO:    ${{ inputs.date_to }}
-          STATE:      ${{ inputs.state }}
-          ENV_INPUT:  ${{ inputs.env }}
-          DRY_RUN:    ${{ inputs.dry_run }}
-          PR_COUNT:   ${{ steps.discover.outputs.pr_count    || '0' }}
-          WF_COUNT:   ${{ steps.map.outputs.workflow_count   || '0' }}
-          PLAN_COUNT: ${{ steps.map.outputs.plan_count       || '0' }}
+          PR_NUMBERS:    ${{ inputs.pr_numbers }}
+          SCAN_DATE:     ${{ inputs.scan_date }}
+          DATE_FROM:     ${{ inputs.date_from }}
+          DATE_TO:       ${{ inputs.date_to }}
+          STATE:         ${{ inputs.state }}
+          ENV_INPUT:     ${{ inputs.env }}
+          TEST_SITE:     ${{ inputs.test_site }}
+          DRY_RUN:       ${{ inputs.dry_run }}
+          PR_COUNT:      ${{ steps.discover.outputs.pr_count          || '0' }}
+          WF_COUNT:      ${{ steps.map.outputs.workflow_count         || '0' }}
+          JAVA_WF_COUNT: ${{ steps.map.outputs.java_workflow_count    || '0' }}
+          PLAN_COUNT:    ${{ steps.map.outputs.plan_count             || '0' }}
         run: |
           python3 - <<'EOF'
           import json, os
           from pathlib import Path
 
-          pr_numbers = os.environ.get("PR_NUMBERS", "")
-          scan_date  = os.environ.get("SCAN_DATE",  "")
-          date_from  = os.environ.get("DATE_FROM", "")
-          date_to    = os.environ.get("DATE_TO", "")
-          state      = os.environ.get("STATE", "merged")
-          env_input  = os.environ.get("ENV_INPUT", "Demo")
-          dry_run    = os.environ.get("DRY_RUN", "false").lower() == "true"
-          pr_count   = int(os.environ.get("PR_COUNT", "0"))
-          wf_count   = int(os.environ.get("WF_COUNT", "0"))
-          plan_count = int(os.environ.get("PLAN_COUNT", "0"))
+          pr_numbers    = os.environ.get("PR_NUMBERS", "")
+          scan_date     = os.environ.get("SCAN_DATE",  "")
+          date_from     = os.environ.get("DATE_FROM", "")
+          date_to       = os.environ.get("DATE_TO", "")
+          state         = os.environ.get("STATE", "merged")
+          env_input     = os.environ.get("ENV_INPUT", "Demo")
+          test_site     = os.environ.get("TEST_SITE", "main")
+          dry_run       = os.environ.get("DRY_RUN", "false").lower() == "true"
+          pr_count      = int(os.environ.get("PR_COUNT", "0"))
+          wf_count      = int(os.environ.get("WF_COUNT", "0"))
+          java_wf_count = int(os.environ.get("JAVA_WF_COUNT", "0"))
+          plan_count    = int(os.environ.get("PLAN_COUNT", "0"))
 
           if pr_numbers:
               mode = f"Explicit PR numbers: `{pr_numbers}`"
@@ -773,7 +803,8 @@ jobs:
 
           RISK_BADGE = {"high": "🔴 high", "medium": "🟡 medium", "low": "🟢 low"}
 
-          wf_display = f"{wf_count} (dry run)" if dry_run else str(wf_count)
+          dnet_display = f"{wf_count} (dry run)"      if dry_run else str(wf_count)
+          java_display = f"{java_wf_count} (dry run)" if dry_run else str(java_wf_count)
 
           lines = [
               "## Run Selective Regression — Manual Dispatch",
@@ -790,9 +821,11 @@ jobs:
               "|---|---|",
               f"| Mode | {mode} |",
               f"| Environment | **{env_input}** |",
+              f"| Test site (Java) | **{test_site}** |",
               f"| PRs discovered | {pr_count} |",
               f"| Test plans built | {plan_count} |",
-              f"| Unique workflows dispatched | {wf_display} |",
+              f"| DNet workflows dispatched | {dnet_display} |",
+              f"| Java workflows dispatched | {java_display} |",
               "",
           ]
 
@@ -881,18 +914,23 @@ jobs:
                           lines += [f"*{reason}*", ""]
 
               # ── Dispatched workflows ──────────────────────────────────────────
-              wf_json = Path("state/all_impacted_workflows.json")
-              if wf_json.exists():
-                  all_wf = json.loads(wf_json.read_text())
-                  if all_wf:
-                      lines += ["---", "", "### Workflows Dispatched", "",
-                                 "| Workflow | Target Repo |",
-                                 "|---|---|"]
-                      for wf in all_wf:
-                          lines.append(
-                              f"| `{wf}.yml` | `tr/CobaltRegressionTesting` |"
-                          )
-                      lines.append("")
+              dotnet_json = Path("state/all_impacted_workflows.json")
+              java_json   = Path("state/all_impacted_java_workflows.json")
+              all_dotnet  = json.loads(dotnet_json.read_text()) if dotnet_json.exists() else []
+              all_java    = json.loads(java_json.read_text())   if java_json.exists()   else []
+              if all_dotnet or all_java:
+                  lines += ["---", "", "### Workflows Dispatched", "",
+                             "| Workflow | Type | Inputs | Target Repo |",
+                             "|---|---|---|---|"]
+                  for wf in all_dotnet:
+                      lines.append(
+                          f"| `{wf}.yml` | DNet | `TEST_SITE_DotNet={env_input}` | `tr/CobaltRegressionTesting` |"
+                      )
+                  for wf in all_java:
+                      lines.append(
+                          f"| `{wf}.yml` | Java | `TEST_ENVIRONMENT={env_input}` `TEST_SITE={test_site}` | `tr/CobaltRegressionTesting` |"
+                      )
+                  lines.append("")
 
           with open(os.environ.get("GITHUB_STEP_SUMMARY", "summary.md"), "a") as f:
               f.write("\n".join(lines) + "\n")
