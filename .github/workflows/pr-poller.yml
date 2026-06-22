@@ -737,8 +737,10 @@ jobs:
                   dispatched += 1
               else:
                   err = result.stderr.strip()
-                  if "422" in err or "workflow_dispatch" in err.lower():
-                      print(f"  WARN {wf_file_name}: no workflow_dispatch trigger — skipped",
+                  if ("422" in err or "404" in err or
+                          "workflow_dispatch" in err.lower() or
+                          "not found" in err.lower()):
+                      print(f"  WARN {wf_file_name}: skipped ({err[:120]})",
                             file=sys.stderr)
                   else:
                       print(f"  FAIL {wf_file_name}: {err}", file=sys.stderr)
