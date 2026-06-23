@@ -303,7 +303,7 @@ JAVA_CAT_TO_WORKFLOW = {
     "Content Types / Set Default":           ["WL_Java_Edge_ContentTypes"],
     "Data Orchestration Core Platform":      ["WL_Java_Next_DataOrchestration"],
     "Dockets Gateway":                       ["WL_Java_Edge_DocketsGateway", "WL_Java_Next_DocketsGateway"],
-    "Edge Modules Smoke":                    ["WL_Java_Edge_Module_Smoke"],
+    "Edge Modules Smoke":                    ["WL_Java_Edge_Module_Smoke", "Fedramp_WL_Java_Edge_Module_Smoke"],
     "Find & Print":                          ["WL_Java_Edge_FindAndPrint", "WL_Java_Next_FindAndPrint"],
     "Global Navigation":                     ["WL_Java_Edge_GlobalNavigation"],
     "Home Page":                             ["WL_Java_Edge_HomePage"],
@@ -323,9 +323,9 @@ JAVA_CAT_TO_WORKFLOW = {
     "SearchFacets":                          ["WL_Java_Edge_SearchFacets"],
     "Westlaw Today":                         ["WL_Java_WestlawToday"],
     "WLN Campus":                            ["WL_Java_Next_WLNCampus"],
-    "WLN Core User Scenarios":               ["WL_Java_Edge_Core", "WL_Java_Next_Core_Part_1", "WL_Java_Next_Core_Part_2"],
+    "WLN Core User Scenarios":               ["WL_Java_Edge_Core", "WL_Java_Next_Core_Part_1", "Fedramp_WL_Java_Next_Core_Part2", "Fedramp_WL_Java_Next_Core_Part1", "Fedramp_WL_Java_Edge_Core", "WL_Java_Next_Core_Part_2"],
     "WLN Enhancements":                      ["WL_Java_Edge_Enhancements", "WL_Java_Next_Enhancements"],
-    "Edge 2.0 Smoke Tests(Westlaw Precision)": ["WL_Java_Precision_Edge2_Module_Smoke"],
+    "Edge 2.0 Smoke Tests(Westlaw Precision)": ["WL_Java_Precision_Edge2_Module_Smoke","Fedramp_WL_Java_Precision_Smoke"],
     "Westlaw Advantage":                     ["Westlaw_Advantage_Smoke"],
 }
 
