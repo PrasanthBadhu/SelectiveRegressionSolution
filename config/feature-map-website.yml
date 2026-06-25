@@ -101,6 +101,7 @@ modules:
       - AnzNotes
       - AnzRelatedInfo
       - AnzResponsive
+      - AnzTypeAhead
       - AnzAlerts
       - AnzContacts
       - AnzContinuousClient
@@ -454,6 +455,7 @@ sub_paths:
       - AnzNotes
       - AnzRelatedInfo
       - AnzResponsive
+      - AnzTypeAhead
       - AnzAlerts
       - AnzContacts
       - AnzContinuousClient
@@ -480,6 +482,7 @@ sub_paths:
       - AnzNotes
       - AnzRelatedInfo
       - AnzResponsive
+      - AnzTypeAhead
       - AnzAlerts
       - AnzContacts
       - AnzContinuousClient
@@ -1027,6 +1030,7 @@ keywords:
       - AnzFindAndPrint
       - AnzNzFindAndPrint
       - AnzRelatedInfo
+      - AnzTypeAhead
       - AnzWebsite
       - AuProdSmokeTest
       - NzProdSmokeTest
@@ -1040,6 +1044,7 @@ keywords:
       - AnzFacet
       - AnzFindAndPrint
       - AnzRelatedInfo
+      - AnzTypeAhead
       - AuProdSmokeTest
       - NzProdSmokeTest
       - EdgeSmokeFeatures

@@ -451,6 +451,18 @@ keywords:
       - WebsiteDelivery
       - EdgeSmokeFeatures
 
+  aunz:
+    product: AUNZ
+    test_categories:
+      - AnzTypeAhead
+      - EdgeSmokeFeatures
+
+  anz:
+    product: AUNZ
+    test_categories:
+      - AnzTypeAhead
+      - EdgeSmokeFeatures
+
   canada:
     product: Canada
     test_categories:

@@ -456,6 +456,7 @@ keywords:
     product: AUNZ
     test_categories:
       - AnzFoldering
+      - AnzTypeAhead
       - Foldering
       - EdgeSmokeFeatures
 
@@ -463,6 +464,7 @@ keywords:
     product: AUNZ
     test_categories:
       - AnzFoldering
+      - AnzTypeAhead
       - Foldering
       - EdgeSmokeFeatures
 

@@ -275,6 +275,7 @@ sub_paths:
       - AnzNotes
       - AnzRelatedInfo
       - AnzResponsive
+      - AnzTypeAhead
       - AnzWebsite
       - AnzAlerts
       - AnzContacts
@@ -360,6 +361,7 @@ keywords:
       - AnzFindAndPrint
       - AnzNzFindAndPrint
       - AnzRelatedInfo
+      - AnzTypeAhead
       - AnzWebsite
       - AuProdSmokeTest
       - NzProdSmokeTest
@@ -373,6 +375,7 @@ keywords:
       - AnzFacet
       - AnzFindAndPrint
       - AnzRelatedInfo
+      - AnzTypeAhead
       - AuProdSmokeTest
       - NzProdSmokeTest
       - Aug2025-Transition

@@ -655,6 +655,7 @@ keywords:
     product: AUNZ
     test_categories:
       - AnzAlerts
+      - AnzTypeAhead
       - AlertAccess
       - EdgeSmokeFeatures
 
@@ -662,6 +663,7 @@ keywords:
     product: AUNZ
     test_categories:
       - AnzAlerts
+      - AnzTypeAhead
       - AlertAccess
       - EdgeSmokeFeatures
 
