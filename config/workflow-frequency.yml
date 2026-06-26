@@ -334,3 +334,106 @@ workflows:
   WL_DNet_Precision_WestlawPrecision_Part5:      Weekly
   WL_DNet_Precision_WestlawPrecision_Part6:      Daily
   WL_DNet_TaxNet_TermHighlight:                  OnceInIteration
+
+  # ── Java ─────────────────────────────────────────────────────────────────────
+  # Alerts Admin
+  WL_Java_Next_Admin_1:                          Daily
+  WL_Java_Next_Admin_2:                          Daily
+  WL_Java_Next_Admin_3:                          Daily
+  WL_Java_Next_AlertsUI_Admin_4:                 Daily
+  WL_Java_Edge_AlertsUI_Admin_Maven:             Daily
+  WL_Java_Next_Admin_Bulk:                       OnceInIteration
+
+  # Alerts Center
+  WL_Java_Next_AlertsCenter:                     Daily
+  WL_Java_Edge_AlertsCenter:                     Daily
+  WL_Java_Next_AlertsCenter_Bulk_WL:             Monthly
+
+  # Alerts – Company Investigator / CourtWire / Docket / Email / KeyCite / UK / WestClip
+  WL_Java_Edge_Alert_CompanyInvestigator:        OnceInIteration
+  WL_Java_Next_Alert_CompanyInvestigator:        OnceInIteration
+  WL_Java_Next_AlertsUI_CourtWire:               Weekly
+  WL_Java_Edge_AlertsUI_CourtWire:               Weekly
+  WL_Java_Edge_DocketAlert:                      Weekly
+  WL_Java_Next_DocketAlert:                      Weekly
+  WL_Java_Edge_Docket_Track:                     Weekly
+  WL_Java_Next_Docket_Track:                     Weekly
+  WL_Java_Next_AlertsUI_EmailDelivery_Admin:     Daily
+  WL_Java_Edge_AlertsUI_KeyCite_Cloud:           Daily
+  WL_Java_Next_AlertsUI_KeyCite_Cloud:           Daily
+  WL_Java_Next_AlertsUI_UK:                      WeeklyTwice
+  WL_Java_Edge_WestClip:                         Daily
+  WL_Java_Next_WestClip:                         Daily
+
+  # BLC / Arbitration
+  WL_Java_Edge_Arbitration:                      OnceInIteration
+  WL_Java_Next_Arbitration:                      OnceInIteration
+  WL_Java_Next_BLCCore:                          Weekly
+  WL_Java_Edge_BLCCore:                          Weekly
+
+  # Company Investigator / Content Types / Data Orchestration
+  WL_JAVA_Edge_CompanyInvestigator_Maven:        Weekly
+  WL_JAVA_Next_CompanyInvestigator_Maven:        Weekly
+  WL_Java_Edge_ContentTypes:                     Weekly
+  WL_Java_Next_DataOrchestration:                Weekly
+
+  # Dockets Gateway / Find and Print
+  WL_Java_Edge_DocketsGateway:                   WeeklyTwice
+  WL_Java_Next_DocketsGateway:                   WeeklyTwice
+  WL_Java_Edge_FindAndPrint:                     WeeklyTwice
+  WL_Java_Next_FindAndPrint:                     WeeklyTwice
+
+  # Module Smoke / Global Navigation / Home Page
+  WL_Java_Edge_Module_Smoke:                     Daily
+  Fedramp_WL_Java_Edge_Module_Smoke:             Daily
+  WL_Java_Edge_GlobalNavigation:                 OnceInIteration
+  WL_Java_Edge_HomePage:                         OnceInIteration
+  Fedramp_WL_Java_Edge_HomePage:                 OnceInIteration
+
+  # Inline KeyCite / NYOD
+  WL_Java_Edge_InlineKC:                         Daily
+  WL_Java_Next_InlineKC:                         Daily
+  WL_Java_Edge_NYOD:                             Daily
+  WL_Java_Next_NYOD:                             Daily
+  Fedramp_WL_Java_Edge_NYOD:                     Daily
+  Fedramp_WL_Java_Next_NYOD:                     Daily
+
+  # Portal Manager / Practical Law / Professional Profiles / Professional Reports
+  WL_Java_Edge_PortalManagerFP:                  Weekly
+  WL_Java_Next_PortalManagerFP:                  Weekly
+  WL_Java_Edge_PracticalLaw:                     OnceInIteration
+  WL_Java_Next_PracticalLaw:                     OnceInIteration
+  WL_Java_Next_professionalProfiles:             OnceInIteration
+  Fedramp_WL_Java_Next_ProfessionalProfiles:     OnceInIteration
+  WL_Java_Next_ProfessionalReports:              Weekly
+  WL_Java_Edge_ProfessionalReports:              Weekly
+
+  # PUC / Recent Filters / Related Documents / Related Info
+  WL_Java_Edge_PUC:                              Weekly
+  WL_Java_Next_PUC:                              Weekly
+  Fedramp_WL_Java_Edge_puc:                      Weekly
+  Fedramp_WL_Java_Next_puc:                      Weekly
+  WL_Java_Edge_RecentFilters:                    WeeklyTwice
+  WL_Java_Edge_RelatedDocuments:                 OnceInIteration
+  WL_JAVA_Next_RelatedInfo_CopyWithRef:          WeeklyTwice
+  WL_Java_Next_RelatedInfo_Platform:             Weekly
+
+  # Scrolling / Search Platform / Search Facets
+  WL_Edge_Java_Scrolling:                        Weekly
+  WL_Java_Next_Search_Platform:                  Daily
+  WL_Java_Edge_SearchFacets:                     OnceInIteration
+  Fedramp_WL_Java_Edge_SearchFacet:              OnceInIteration
+
+  # Westlaw Today / WLN Campus / Core / Enhancements
+  WL_Java_WestlawToday:                          Daily
+  WL_Java_Next_WLNCampus:                        Weekly
+  WL_Java_Edge_Core:                             Weekly
+  WL_Java_Next_Core_Part_1:                      Weekly
+  WL_Java_Next_Core_Part_2:                      Weekly
+  WL_Java_Edge_Enhancements:                     Weekly
+  WL_Java_Next_Enhancements:                     Weekly
+
+  # Fedramp / Precision Smoke / Advantage
+  Fedramp_WL_Java_Precision_Smoke:               WeeklyTwice
+  WL_Java_Precision_Edge2_Module_Smoke:          WeeklyTwice
+  Westlaw_Advantage_Smoke:                       Daily
