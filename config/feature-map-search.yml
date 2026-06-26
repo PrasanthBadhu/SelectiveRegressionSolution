@@ -469,6 +469,13 @@ keywords:
       - LA_Filtering
       - LA_OpportunityFinderTests
 
+  "la typeahead":
+    product: LitigationAnalytics
+    test_categories:
+      - LitigationAnalyticsDeliveryTests
+      - LA_Filtering
+      - LA_OpportunityFinderTests
+
   "opportunity finder":
     product: LitigationAnalytics
     test_categories:
@@ -593,6 +600,18 @@ keywords:
       - ParagraphHighlighting
 
   "quick check":
+    product: QuickCheck
+    test_categories:
+      - QuickCheckUiCheckWork_1
+      - QuickCheckUiCheckWork_2
+      - QuickCheckUiCheckWork_3
+      - QuickCheckUiCheckWork_4
+      - QuickCheckUiJudicial_1
+      - QuickCheckUiJudicial_2
+      - QuickCheckUiJudicial_3
+      - QuickCheckUiOpponent
+
+  quickcheck:
     product: QuickCheck
     test_categories:
       - QuickCheckUiCheckWork_1
