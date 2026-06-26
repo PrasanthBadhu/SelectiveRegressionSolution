@@ -41,6 +41,21 @@ on:
         required: false
         type: string
         default: ""
+      dev_repo:
+        description: "Dev repo to search — REQUIRED when entering PR numbers."
+        required: false
+        type: choice
+        default: "(all repos)"
+        options:
+          - "(all repos)"
+          - cobalt_search
+          - cobalt_static-content
+          - cobalt_document_netcore
+          - cobalt_website
+          - cobalt_alert
+          - cobalt_foldering
+          - cobalt_relatedinfo
+          - cobalt_typeahead
       scan_date:
         description: "Single date to scan merged PRs (YYYY-MM-DD). Overrides date_from/date_to."
         required: false
@@ -125,6 +140,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.COBALT_READ_TOKEN }}
           PR_NUMBERS:   ${{ inputs.pr_numbers }}
+          DEV_REPO:     ${{ inputs.dev_repo }}
           SCAN_DATE:    ${{ inputs.scan_date }}
           DATE_FROM:    ${{ inputs.date_from }}
           DATE_TO:      ${{ inputs.date_to }}
@@ -146,6 +162,23 @@ jobs:
           enabled_repos = [r for r in registry.get("repos", []) if r.get("enabled")]
 
           pr_numbers_raw  = os.environ.get("PR_NUMBERS", "").strip()
+          dev_repo_input  = os.environ.get("DEV_REPO",   "(all repos)").strip()
+
+          if pr_numbers_raw and dev_repo_input == "(all repos)":
+              print("ERROR: 'Dev Repo' must be selected when entering PR number(s). "
+                    "Please pick a specific repository from the Dev Repo dropdown.",
+                    file=sys.stderr)
+              sys.exit(1)
+
+          if pr_numbers_raw and dev_repo_input != "(all repos)":
+              target_full   = f"tr/{dev_repo_input}"
+              enabled_repos = [r for r in enabled_repos if r.get("full_name") == target_full]
+              if not enabled_repos:
+                  print(f"ERROR: repo '{target_full}' not found in registry or not enabled.",
+                        file=sys.stderr)
+                  sys.exit(1)
+              print(f"  Dev Repo filter: {target_full}", file=sys.stderr)
+
           scan_date_raw   = os.environ.get("SCAN_DATE",  "").strip()
           date_from_raw   = os.environ.get("DATE_FROM",  "").strip()
           date_to_raw     = os.environ.get("DATE_TO",    "").strip()
